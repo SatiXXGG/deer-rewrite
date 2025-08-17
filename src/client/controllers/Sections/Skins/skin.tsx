@@ -1,0 +1,128 @@
+import React from "@rbxts/react";
+
+export default function RSkinsSkin() {
+	return (
+		<imagelabel
+			BackgroundTransparency={1}
+			Image={"rbxassetid://127109004354578"}
+			key={"Pack1"}
+			ScaleType={Enum.ScaleType.Fit}
+			Size={UDim2.fromScale(0.487923, 1)}
+		>
+			<textlabel
+				AnchorPoint={new Vector2(0.5, 0)}
+				BackgroundTransparency={1}
+				FontFace={
+					new Font(
+						"rbxasset://fonts/families/GothamSSm.json",
+						Enum.FontWeight.ExtraBold,
+						Enum.FontStyle.Normal,
+					)
+				}
+				key={"Name"}
+				Position={UDim2.fromScale(0.686469, 0.148929)}
+				Size={UDim2.fromScale(0.495049, 0.40201)}
+				Text={"[[SKIN NAME]]"}
+				TextColor3={new Color3(1, 1, 1)}
+				TextScaled={true}
+			>
+				<textlabel
+					AnchorPoint={new Vector2(0.5, 0.5)}
+					BackgroundTransparency={1}
+					FontFace={
+						new Font(
+							"rbxasset://fonts/families/GothamSSm.json",
+							Enum.FontWeight.ExtraBold,
+							Enum.FontStyle.Normal,
+						)
+					}
+					key={"Txt"}
+					Position={UDim2.fromScale(0.5, 0.466667)}
+					Size={UDim2.fromScale(1, 1)}
+					Text={"[[SKIN NAME]]"}
+					TextColor3={new Color3(1, 1, 1)}
+					TextScaled={true}
+				>
+					<uistroke key={"UIStroke"} Color={Color3.fromRGB(0, 32, 55)} Thickness={2.5} />
+				</textlabel>
+
+				<uistroke key={"UIStroke"} Thickness={3} />
+
+				<uigradient
+					key={"UIGradient"}
+					Transparency={
+						new NumberSequence([new NumberSequenceKeypoint(0, 0.9), new NumberSequenceKeypoint(1, 0.9)])
+					}
+				/>
+			</textlabel>
+
+			<frame
+				AnchorPoint={new Vector2(1, 1)}
+				BackgroundTransparency={1}
+				key={"Buy"}
+				Position={UDim2.fromScale(0.933993, 0.899498)}
+				Size={UDim2.fromScale(0.49505, 0.276382)}
+			>
+				<imagebutton
+					AnchorPoint={new Vector2(0.5, 0.5)}
+					BackgroundTransparency={1}
+					Image={"rbxassetid://124390301475877"}
+					key={"Button"}
+					Position={UDim2.fromScale(0.5, 0.5)}
+					ScaleType={Enum.ScaleType.Fit}
+					Size={UDim2.fromScale(1, 1)}
+				>
+					<textlabel
+						AnchorPoint={new Vector2(0.5, 0.5)}
+						BackgroundTransparency={1}
+						FontFace={
+							new Font(
+								"rbxasset://fonts/families/GothamSSm.json",
+								Enum.FontWeight.ExtraBold,
+								Enum.FontStyle.Normal,
+							)
+						}
+						key={"Txt"}
+						Position={UDim2.fromScale(0.5, 0.518868)}
+						Size={UDim2.fromScale(0.926267, 0.675325)}
+						Text={"BUY"}
+						TextColor3={new Color3(1, 1, 1)}
+						TextScaled={true}
+					>
+						<textlabel
+							AnchorPoint={new Vector2(0.5, 0.5)}
+							BackgroundTransparency={1}
+							FontFace={
+								new Font(
+									"rbxasset://fonts/families/GothamSSm.json",
+									Enum.FontWeight.ExtraBold,
+									Enum.FontStyle.Normal,
+								)
+							}
+							key={"Txt"}
+							Position={UDim2.fromScale(0.5, 0.458868)}
+							Size={UDim2.fromScale(1, 1)}
+							Text={"BUY"}
+							TextColor3={new Color3(1, 1, 1)}
+							TextScaled={true}
+						>
+							<uistroke key={"UIStroke"} Color={Color3.fromRGB(9, 53, 0)} Thickness={2.5} />
+						</textlabel>
+
+						<uistroke key={"UIStroke"} Thickness={3} />
+
+						<uigradient
+							key={"UIGradient"}
+							Transparency={
+								new NumberSequence([
+									new NumberSequenceKeypoint(0, 0.9),
+									new NumberSequenceKeypoint(1, 0.9),
+								])
+							}
+						/>
+					</textlabel>
+				</imagebutton>
+			</frame>
+		</imagelabel>
+	);
+}
