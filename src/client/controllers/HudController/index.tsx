@@ -3,6 +3,7 @@ import { Players } from "@rbxts/services";
 import React from "@rbxts/react";
 import { createRoot } from "@rbxts/react-roblox";
 import RApp from "./app";
+import RTimer from "./timer";
 @Controller({})
 export class HudController implements OnStart {
 	onStart() {
@@ -11,8 +12,10 @@ export class HudController implements OnStart {
 
 		const playerGui = player.WaitForChild("PlayerGui") as PlayerGui;
 		const root = createRoot(playerGui);
+
 		root.render(
-			<screengui ZIndexBehavior={"Sibling"}>
+			<screengui ZIndexBehavior={"Sibling"} ResetOnSpawn={false}>
+				<RTimer></RTimer>
 				<RApp></RApp>
 			</screengui>,
 		);
