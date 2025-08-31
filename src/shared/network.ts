@@ -1,10 +1,15 @@
 import { Networking } from "@flamework/networking";
+import { EItemClass } from "./types/GameItem";
 
 interface ClientToServerEvents {}
 
 interface ServerToClientEvents {}
 
-interface ClientToServerFunctions {}
+interface ClientToServerFunctions {
+	skins: {
+		buy(Class: EItemClass, id: string): boolean;
+	};
+}
 
 interface ServerToClientFunctions {}
 

@@ -4,12 +4,14 @@ import { Players } from "@rbxts/services";
 import { onPlayerJoined } from "server/modding/onPlayerJoined/interface";
 import { EItemClass, GameItem } from "shared/types/GameItem";
 import { ItemService } from "./ItemService";
-import { EDeerSkins } from "shared/data/Skins";
+import { EDeerSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } from "shared/data/Skins";
+import { Functions } from "server/network";
 
 interface IPlayerData {
-	cash: 0;
+	cash: number;
 	inventory: GameItem[];
 	currentDeer: EDeerSkins;
+	currentWendigo: EWendigoSkins;
 	lastJoin: number;
 	lastReward: number;
 	currentReward: number;
@@ -22,7 +24,8 @@ export class DataService implements OnStart, onPlayerJoined {
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
 		currentDeer: EDeerSkins.default,
-		cash: 0,
+		currentWendigo: EWendigoSkins.default,
+		cash: 99999,
 		inventory: [],
 		lastJoin: 0,
 		lastReward: 0,
@@ -31,7 +34,21 @@ export class DataService implements OnStart, onPlayerJoined {
 	private Store = ProfileStore.New(this.DataKey, this.template);
 
 	constructor(private ItemService: ItemService) {}
-	onStart() {}
+	onStart() {
+		Functions.skins.buy.setCallback((player, Class, id) => {
+			const info = this.ItemService.getInfo<IBuyableInfo>(Class, id);
+			if (info) {
+				const { price } = info;
+				if (this.hasCash(player, price)) {
+					this.addCash(player, -price);
+					this.give(player, Class, id);
+					this.setCurrentSkin(Class, id, player);
+					return true;
+				}
+			}
+			return false;
+		});
+	}
 
 	load(player: Player): Profile<IPlayerData> {
 		const key = `PlayerData-${player.UserId}`;
@@ -65,8 +82,27 @@ export class DataService implements OnStart, onPlayerJoined {
 		const profile = this.getProfile(player);
 		return profile.Data.currentDeer;
 	}
-	give(itemClass: EItemClass, id: string) {
-		const hasItem = this.has(Players.LocalPlayer, itemClass, id);
+
+	setCurrentSkin(Class: EItemClass, id: string, player: Player) {
+		const profile = this.getProfile(player);
+		switch (Class) {
+			case EItemClass.deer:
+				profile.Data.currentDeer = id as EDeerSkins;
+				break;
+			case EItemClass.wendigo:
+				profile.Data.currentWendigo = id as EWendigoSkins;
+				break;
+			default:
+				break;
+		}
+	}
+
+	getCurrentWendigo(player: Player) {
+		const profile = this.getProfile(player);
+		return profile.Data.currentWendigo;
+	}
+	give(player: Player, itemClass: EItemClass, id: string) {
+		const hasItem = this.has(player, itemClass, id);
 		if (hasItem) {
 			warn("🎉 You already have this item, this is a dev error");
 			return;
@@ -82,7 +118,16 @@ export class DataService implements OnStart, onPlayerJoined {
 			class: itemClass,
 		};
 
-		const profile = this.getProfile(Players.LocalPlayer);
+		const profile = this.getProfile(player);
 		profile.Data.inventory.push(item);
+	}
+	hasCash(player: Player, amount: number) {
+		const profile = this.getProfile(player);
+		return profile.Data.cash >= amount;
+	}
+
+	addCash(player: Player, amount: number) {
+		const profile = this.getProfile(player);
+		profile.Data.cash += amount;
 	}
 }

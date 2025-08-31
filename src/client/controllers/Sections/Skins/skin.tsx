@@ -1,6 +1,33 @@
-import React from "@rbxts/react";
+import React, { Suspense, useRef } from "@rbxts/react";
+import ObjectViewport from "client/controllers/Elements/ObjectViewport";
+import { Functions } from "client/network";
+import { Containers, EWendigoSkins, IBuyableInfo } from "shared/data/Skins";
+import { EItemClass } from "shared/types/GameItem";
 
-export default function RSkinsSkin() {
+interface IProps {
+	info: IBuyableInfo;
+}
+
+export default function RShopElement(props: IProps) {
+	const { info } = props;
+	const container = Containers[info.class];
+	const preview = container.FindFirstChild(info.id)!.Clone() as Model;
+	const buttonEvents: React.InstanceEvent<ImageButton> = {
+		Activated: () => {
+			const result = Functions.skins.buy.invokeWithTimeout(1, info.class, info.id).expect();
+			print("Bought result: ", result);
+		},
+	};
+	assert(preview !== undefined, "Preview is undefined: " + info.display + " " + info.id);
+	let cf = preview.GetPivot();
+	//* cframe adjustment
+	switch (info.class) {
+		case EItemClass.wendigo:
+			cf = cf.mul(new CFrame(0, 0, -8)).mul(CFrame.Angles(0, math.rad(180), 0));
+			break;
+		case EItemClass.deer:
+			break;
+	}
 	return (
 		<imagelabel
 			BackgroundTransparency={1}
@@ -9,6 +36,15 @@ export default function RSkinsSkin() {
 			ScaleType={Enum.ScaleType.Fit}
 			Size={UDim2.fromScale(0.487923, 1)}
 		>
+			<ObjectViewport
+				Native={{
+					Size: UDim2.fromScale(0.45, 0.9),
+					Position: UDim2.fromScale(0, 0.01),
+					BackgroundTransparency: 1,
+				}}
+				Object={preview!}
+				cf={cf}
+			></ObjectViewport>
 			<textlabel
 				AnchorPoint={new Vector2(0.5, 0)}
 				BackgroundTransparency={1}
@@ -22,7 +58,7 @@ export default function RSkinsSkin() {
 				key={"Name"}
 				Position={UDim2.fromScale(0.686469, 0.148929)}
 				Size={UDim2.fromScale(0.495049, 0.40201)}
-				Text={"[[SKIN NAME]]"}
+				Text={props.info.display}
 				TextColor3={new Color3(1, 1, 1)}
 				TextScaled={true}
 			>
@@ -39,7 +75,7 @@ export default function RSkinsSkin() {
 					key={"Txt"}
 					Position={UDim2.fromScale(0.5, 0.466667)}
 					Size={UDim2.fromScale(1, 1)}
-					Text={"[[SKIN NAME]]"}
+					Text={props.info.display}
 					TextColor3={new Color3(1, 1, 1)}
 					TextScaled={true}
 				>
@@ -71,6 +107,7 @@ export default function RSkinsSkin() {
 					Position={UDim2.fromScale(0.5, 0.5)}
 					ScaleType={Enum.ScaleType.Fit}
 					Size={UDim2.fromScale(1, 1)}
+					Event={buttonEvents}
 				>
 					<textlabel
 						AnchorPoint={new Vector2(0.5, 0.5)}

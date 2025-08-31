@@ -1,9 +1,11 @@
 import { useSpring } from "@rbxts/pretty-react-hooks";
-import React, { useState } from "@rbxts/react";
+import React, { useContext, useState } from "@rbxts/react";
+import ROpenedContext from "client/context/currentOpen";
 
 export default function RShopButton() {
 	const [scale, setScale] = useState(1);
 	const [hovering, setHovering] = useState(false);
+	const context = useContext(ROpenedContext);
 	const scaleSpring = useSpring(scale, {
 		damping: 0.5,
 	});
@@ -20,6 +22,7 @@ export default function RShopButton() {
 			Event={{
 				Activated: () => {
 					setScale(1.15);
+					context?.setOpened("Skins");
 					task.delay(0.1, () => {
 						if (hovering) {
 							setScale(1.1);

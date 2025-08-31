@@ -7,5 +7,6 @@ interface ReplicatedStorage extends Instance {
 			default: Model;
 		};
 		bow: Folder;
+		taunt: Folder;
 	};
 }
