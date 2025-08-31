@@ -39,7 +39,7 @@ const RoundsInfo: Record<Rounds, RoundInfo> = {
 		order: 4,
 	},
 	[Rounds.Survive]: {
-		duration: 5,
+		duration: 60,
 		order: 5,
 	},
 	[Rounds.Detection]: {

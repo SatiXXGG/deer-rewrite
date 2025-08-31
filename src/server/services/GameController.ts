@@ -16,6 +16,7 @@ export class GameController implements OnStart {
 		private MapService: MapService,
 		private SpawnService: SpawnService,
 	) {}
+
 	onStart() {
 		this.RoundService.onChange((current) => {
 			if (current === Rounds.Voting) {
@@ -45,6 +46,12 @@ export class GameController implements OnStart {
 				});
 			} else if (Rounds.Survive === current) {
 				this.MapService.highlightWinning();
+				//* wendigo spawns
+				const players = this.SpawnService.getPlayers();
+				print(players);
+				players.forEach((player) => {
+					this.SpawnService.spawnWendigo(player);
+				});
 			} else if (Rounds.Detection === current) {
 				const safeHunters = CollectionService.GetTagged(Roles.safeHunter).size();
 

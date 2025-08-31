@@ -10,6 +10,7 @@ import { AvatarService } from "./AvatarService";
 export class SpawnService implements OnStart {
 	constructor(private MapService: MapService, private AvatarService: AvatarService) {}
 	onStart() {}
+
 	spawnMushroom() {
 		if (this.MapService.currentMap) {
 			print("🍄");
@@ -91,6 +92,24 @@ export class SpawnService implements OnStart {
 		}
 	}
 
+	spawnWendigo(player: Player) {
+		const cc = player.Character as ICharacter | undefined;
+		print(cc);
+		if (cc) {
+			const currentPosition = cc.HumanoidRootPart.CFrame;
+			const character = this.AvatarService.changeWendigo(player);
+			print(character);
+			if (character) {
+				//* moves to the spawn
+				print("🧟 Wendigo spawned");
+				player.AddTag(Roles.playing);
+				player.AddTag(Roles.wendigo);
+				character.HumanoidRootPart.CFrame = currentPosition;
+				this.autoRemoveTags(player, Roles.wendigo);
+			}
+		}
+	}
+
 	getRole(role: Roles) {
 		const tagged = CollectionService.GetTagged(role).filter((obj) => {
 			if (obj.IsA("Player")) {
@@ -115,6 +134,10 @@ export class SpawnService implements OnStart {
 	}
 
 	getPlayers() {
-		return CollectionService.GetTagged("player");
+		return CollectionService.GetTagged(Roles.deer) as Player[];
+	}
+
+	getWendigo() {
+		return CollectionService.GetTagged(Roles.wendigo) as Player[];
 	}
 }
