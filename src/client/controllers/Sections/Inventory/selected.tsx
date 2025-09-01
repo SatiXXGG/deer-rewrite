@@ -1,6 +1,28 @@
-import React from "@rbxts/react";
+import Make from "@rbxts/make";
+import React, { useContext, useEffect, useState } from "@rbxts/react";
+import RInventoryContext from "client/context/inventorySelected";
+import ObjectViewport from "client/controllers/Elements/ObjectViewport";
+import { Containers, GetInfoByClass } from "shared/data/Skins";
 
 export default function RInventorySelected() {
+	const [item, setItem] = useState<Model | undefined>(undefined);
+	const [name, setName] = useState("None");
+
+	const context = useContext(RInventoryContext);
+
+	useEffect(() => {
+		if (context) {
+			const { selected, Class } = context;
+			const container = Containers[Class];
+			const model = container.FindFirstChild(selected) as Model | undefined;
+			if (model) {
+				setItem(model.Clone());
+			}
+			const info = GetInfoByClass(Class, selected);
+			setName(info.display);
+		}
+	}, [context?.selected, context?.Class]);
+
 	return (
 		<imagelabel
 			BackgroundTransparency={1}
@@ -24,7 +46,7 @@ export default function RInventorySelected() {
 				key={"Name"}
 				Position={UDim2.fromScale(0.5, 0.0207469)}
 				Size={UDim2.fromScale(1, 0.103734)}
-				Text={"SKIN NAME"}
+				Text={name}
 				TextColor3={new Color3(1, 1, 1)}
 				TextScaled={true}
 			>
@@ -153,6 +175,16 @@ export default function RInventorySelected() {
 				Position={UDim2.fromScale(0.499926, 0.496482)}
 				Size={UDim2.fromScale(0.792336, 0.508028)}
 			/>
+			<ObjectViewport
+				Native={{
+					AnchorPoint: new Vector2(0.5, 0.5),
+					BackgroundTransparency: 1,
+					key: "preview",
+					Position: UDim2.fromScale(0.499926, 0.496482),
+					Size: UDim2.fromScale(0.792336, 0.508028),
+				}}
+				Object={item ?? Make("Model", {})}
+			></ObjectViewport>
 
 			<imagelabel
 				BackgroundTransparency={1}

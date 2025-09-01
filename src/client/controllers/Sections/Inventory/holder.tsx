@@ -1,7 +1,35 @@
-import React from "@rbxts/react";
+import React, { useEffect, useState } from "@rbxts/react";
 import RInventorySelected from "./selected";
+import { Events, Functions } from "client/network";
+import RInventorySlot from "./slot";
+import { GameItem } from "shared/types/GameItem";
 
 export default function RInventoryHolder() {
+	//* skins got
+	const [skins, setSkins] = useState<GameItem[]>(Functions.inventory.getInventoryItems().expect());
+
+	useEffect(() => {
+		print("connecting event");
+
+		// solo cargar una vez el inventario
+		const conn = Events.inventory.addItem.connect((item) => {
+			print(item);
+			setSkins((prev) => {
+				// si ya existe un item con misma id y class, no cambies el estado
+				if (prev.find((i) => i.id === item.id && i.class === item.class)) {
+					return prev; // no hace nada → no hay re-render
+				}
+				return [...prev, item]; // agrega solo si es nuevo
+			});
+		});
+		return () => conn.Disconnect();
+	}, []); // 👈 solo al montar
+
+	useEffect(() => {
+		print(skins.size());
+		print(skins);
+	}, [skins]);
+
 	return (
 		<frame
 			AnchorPoint={new Vector2(0.5, 0.5)}
@@ -44,6 +72,9 @@ export default function RInventoryHolder() {
 					>
 						<uiaspectratioconstraint key={"UIAspectRatioConstraint"} />
 					</uigridlayout>
+					{skins.map((skin) => {
+						return <RInventorySlot key={skin.id} Class={skin.class} id={skin.id}></RInventorySlot>;
+					})}
 				</scrollingframe>
 			</frame>
 			<RInventorySelected></RInventorySelected>

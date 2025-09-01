@@ -2,6 +2,7 @@ import { useSpring } from "@rbxts/pretty-react-hooks";
 import React, { Suspense, useRef, useState } from "@rbxts/react";
 import ObjectViewport from "client/controllers/Elements/ObjectViewport";
 import { Functions } from "client/network";
+import getClassCf from "client/utils/getClassCf";
 import { Containers, EWendigoSkins, IBuyableInfo } from "shared/data/Skins";
 import { EItemClass } from "shared/types/GameItem";
 
@@ -35,15 +36,9 @@ export default function RShopElement(props: IProps) {
 		},
 	};
 	assert(preview !== undefined, "Preview is undefined: " + info.display + " " + info.id);
-	let cf = preview.GetPivot();
+	const cf = preview.GetPivot().mul(getClassCf(info.class));
 	//* cframe adjustment
-	switch (info.class) {
-		case EItemClass.wendigo:
-			cf = cf.mul(new CFrame(0, 0, -8)).mul(CFrame.Angles(0, math.rad(180), 0));
-			break;
-		case EItemClass.deer:
-			break;
-	}
+
 	return (
 		<imagelabel
 			BackgroundTransparency={1}

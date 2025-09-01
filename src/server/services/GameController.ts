@@ -48,7 +48,6 @@ export class GameController implements OnStart {
 				this.MapService.highlightWinning();
 				//* wendigo spawns
 				const players = this.SpawnService.getPlayers();
-				print(players);
 				players.forEach((player) => {
 					this.SpawnService.spawnWendigo(player);
 				});

@@ -1,3 +1,3 @@
 export const Settings = {
-	hunters: 0,
+	hunters: 1,
 };

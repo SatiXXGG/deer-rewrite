@@ -5,7 +5,7 @@ import { onPlayerJoined } from "server/modding/onPlayerJoined/interface";
 import { EItemClass, GameItem } from "shared/types/GameItem";
 import { ItemService } from "./ItemService";
 import { EDeerSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } from "shared/data/Skins";
-import { Functions } from "server/network";
+import { Events, Functions } from "server/network";
 
 interface IPlayerData {
 	cash: number;
@@ -47,6 +47,11 @@ export class DataService implements OnStart, onPlayerJoined {
 				}
 			}
 			return false;
+		});
+
+		Functions.inventory.getInventoryItems.setCallback((player) => {
+			const profile = this.getProfile(player);
+			return profile.Data.inventory;
 		});
 	}
 
@@ -117,7 +122,7 @@ export class DataService implements OnStart, onPlayerJoined {
 			id: id,
 			class: itemClass,
 		};
-
+		Events.inventory.addItem(player, item);
 		const profile = this.getProfile(player);
 		profile.Data.inventory.push(item);
 	}
