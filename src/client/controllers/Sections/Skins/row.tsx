@@ -8,8 +8,8 @@ interface Props {
 
 export default function RSkinsRowHolder(props: Props) {
 	const children = props.children ?? [];
-	const r1 = children.filter((_, i) => i < 3);
-	const r2 = children.filter((_, i) => i >= 3);
+	const r1 = children.filter((_, i) => i < 2);
+	const r2 = children.filter((_, i) => i >= 2);
 
 	return (
 		<frame BackgroundTransparency={1} key={"Holder1"} Size={UDim2.fromScale(0.985253, 0.98821)}>

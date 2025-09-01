@@ -67,7 +67,7 @@ export default function RSkinsUi() {
 					{wendigoMapped.map((row) => (
 						<RSkinsRowHolder>
 							{row.map((info) => {
-								return <RShopElement info={info}></RShopElement>;
+								return <RShopElement info={info} bought={false}></RShopElement>;
 							})}
 						</RSkinsRowHolder>
 					))}

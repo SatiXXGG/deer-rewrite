@@ -1,4 +1,5 @@
-import React, { Suspense, useRef } from "@rbxts/react";
+import { useSpring } from "@rbxts/pretty-react-hooks";
+import React, { Suspense, useRef, useState } from "@rbxts/react";
 import ObjectViewport from "client/controllers/Elements/ObjectViewport";
 import { Functions } from "client/network";
 import { Containers, EWendigoSkins, IBuyableInfo } from "shared/data/Skins";
@@ -6,16 +7,31 @@ import { EItemClass } from "shared/types/GameItem";
 
 interface IProps {
 	info: IBuyableInfo;
+	bought: boolean;
 }
 
 export default function RShopElement(props: IProps) {
 	const { info } = props;
+	const [mainScale, setMainScale] = useState(1);
+	const [isBought, setBought] = useState(props.bought);
+
+	const springScale = useSpring(mainScale);
+
 	const container = Containers[info.class];
 	const preview = container.FindFirstChild(info.id)!.Clone() as Model;
 	const buttonEvents: React.InstanceEvent<ImageButton> = {
 		Activated: () => {
+			if (isBought) return;
 			const result = Functions.skins.buy.invokeWithTimeout(1, info.class, info.id).expect();
-			print("Bought result: ", result);
+			if (result) {
+				setBought(true);
+			}
+		},
+		MouseEnter: () => {
+			setMainScale(1.05);
+		},
+		MouseLeave: () => {
+			setMainScale(1);
 		},
 	};
 	assert(preview !== undefined, "Preview is undefined: " + info.display + " " + info.id);
@@ -99,11 +115,13 @@ export default function RShopElement(props: IProps) {
 				Position={UDim2.fromScale(0.933993, 0.899498)}
 				Size={UDim2.fromScale(0.49505, 0.276382)}
 			>
+				<uiscale Scale={springScale}></uiscale>
 				<imagebutton
 					AnchorPoint={new Vector2(0.5, 0.5)}
 					BackgroundTransparency={1}
 					Image={"rbxassetid://124390301475877"}
 					key={"Button"}
+					ImageColor3={isBought ? Color3.fromRGB(255, 20, 20) : new Color3(1, 1, 1)}
 					Position={UDim2.fromScale(0.5, 0.5)}
 					ScaleType={Enum.ScaleType.Fit}
 					Size={UDim2.fromScale(1, 1)}
@@ -122,7 +140,7 @@ export default function RShopElement(props: IProps) {
 						key={"Txt"}
 						Position={UDim2.fromScale(0.5, 0.518868)}
 						Size={UDim2.fromScale(0.926267, 0.675325)}
-						Text={"BUY"}
+						Text={isBought ? "BOUGHT" : "BUY"}
 						TextColor3={new Color3(1, 1, 1)}
 						TextScaled={true}
 					>
@@ -139,7 +157,7 @@ export default function RShopElement(props: IProps) {
 							key={"Txt"}
 							Position={UDim2.fromScale(0.5, 0.458868)}
 							Size={UDim2.fromScale(1, 1)}
-							Text={"BUY"}
+							Text={isBought ? "BOUGHT" : "BUY"}
 							TextColor3={new Color3(1, 1, 1)}
 							TextScaled={true}
 						>

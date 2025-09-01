@@ -7,6 +7,7 @@ import Quests from "../Sections/Quests";
 import Rewards from "../Sections/Rewards";
 import Settings from "../Sections/Settings";
 import Skins from "../Sections/Skins";
+import Inventory from "../Sections/Inventory";
 
 export default function RApp() {
 	const [opened, setOpened] = useState<string | undefined>(undefined);
@@ -17,6 +18,7 @@ export default function RApp() {
 			<Rewards></Rewards>
 			<Settings></Settings>
 			<Skins></Skins>
+			<Inventory></Inventory>
 			<RButtonContainer>
 				<RSectionButton order={1} id="Info" imageId="rbxassetid://108044423266343" />
 				<RSectionButton order={2} id="Inventory" imageId="rbxassetid://132634674535219" />
