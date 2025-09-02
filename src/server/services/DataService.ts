@@ -53,6 +53,40 @@ export class DataService implements OnStart, onPlayerJoined {
 			const profile = this.getProfile(player);
 			return profile.Data.inventory;
 		});
+
+		Functions.skins.isEquipped.setCallback((player, Class, id) => {
+			if (this.has(player, Class, id)) {
+				const profile = this.getProfile(player);
+				if (Class === EItemClass.deer) {
+					return profile.Data.currentDeer === id;
+				} else if (Class === EItemClass.wendigo) {
+					return profile.Data.currentWendigo === id;
+				}
+			}
+			return false;
+		});
+
+		Functions.inventory.equip.setCallback((player, Class, id) => {
+			if (this.has(player, Class, id)) {
+				const profile = this.getProfile(player);
+				if (Class === EItemClass.deer) {
+					if (profile.Data.currentDeer === id) {
+						profile.Data.currentDeer = EDeerSkins.default;
+						return false;
+					}
+					profile.Data.currentDeer = id as EDeerSkins;
+					return true;
+				} else if (Class === EItemClass.wendigo) {
+					if (profile.Data.currentWendigo === id) {
+						profile.Data.currentWendigo = EWendigoSkins.default;
+						return false;
+					}
+					profile.Data.currentWendigo = id as EWendigoSkins;
+					return true;
+				}
+			}
+			return false;
+		});
 	}
 
 	load(player: Player): Profile<IPlayerData> {

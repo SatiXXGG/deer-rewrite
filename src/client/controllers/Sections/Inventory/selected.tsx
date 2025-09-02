@@ -1,12 +1,20 @@
-import Make from "@rbxts/make";
+import { useMotion, useSpring } from "@rbxts/pretty-react-hooks";
 import React, { useContext, useEffect, useState } from "@rbxts/react";
 import RInventoryContext from "client/context/inventorySelected";
 import ObjectViewport from "client/controllers/Elements/ObjectViewport";
+import { Functions } from "client/network";
+import getClassCf from "client/utils/getClassCf";
 import { Containers, GetInfoByClass } from "shared/data/Skins";
+import { EItemClass } from "shared/types/GameItem";
 
 export default function RInventorySelected() {
 	const [item, setItem] = useState<Model | undefined>(undefined);
+	const [equipped, setEquipped] = useState(false);
+
 	const [name, setName] = useState("None");
+	const [scale, setScale] = useState(1);
+	const [buttonColor, colorMotor] = useMotion(new Color3(1, 1, 1));
+	const springScale = useSpring(scale);
 
 	const context = useContext(RInventoryContext);
 
@@ -15,14 +23,33 @@ export default function RInventorySelected() {
 			const { selected, Class } = context;
 			const container = Containers[Class];
 			const model = container.FindFirstChild(selected) as Model | undefined;
+
 			if (model) {
-				setItem(model.Clone());
+				setItem(() => {
+					return model;
+				});
+			} else {
+				setItem(() => {
+					return undefined;
+				});
 			}
+
 			const info = GetInfoByClass(Class, selected);
 			setName(info.display);
-		}
-	}, [context?.selected, context?.Class]);
 
+			//* Equip handling
+
+			Functions.skins.isEquipped.invoke(Class, selected).then((equipped) => {
+				setEquipped(equipped);
+			});
+
+			if (equipped) {
+				colorMotor.tween(Color3.fromRGB(255, 28, 0));
+			} else {
+				colorMotor.tween(Color3.fromRGB(255, 255, 255));
+			}
+		}
+	}, [context?.selected, context?.Class, equipped]);
 	return (
 		<imagelabel
 			BackgroundTransparency={1}
@@ -102,6 +129,7 @@ export default function RInventorySelected() {
 				key={"Equip"}
 				Position={UDim2.fromScale(0.5, 0.950207)}
 				Size={UDim2.fromScale(0.779661, 0.172199)}
+				Event={{ MouseEnter: () => setScale(1.1), MouseLeave: () => setScale(1) }}
 			>
 				<imagebutton
 					AnchorPoint={new Vector2(0.5, 0.5)}
@@ -111,6 +139,17 @@ export default function RInventorySelected() {
 					Position={UDim2.fromScale(0.5, 0.5)}
 					ScaleType={Enum.ScaleType.Fit}
 					Size={UDim2.fromScale(1, 1)}
+					ImageColor3={buttonColor}
+					Event={{
+						Activated: () => {
+							if (context) {
+								Functions.inventory.equip.invoke(context.Class, context.selected).then((res) => {
+									setEquipped(res);
+									print(res);
+								});
+							}
+						},
+					}}
 				>
 					<textlabel
 						AnchorPoint={new Vector2(0.5, 0.5)}
@@ -126,7 +165,7 @@ export default function RInventorySelected() {
 						key={"Txt"}
 						Position={UDim2.fromScale(0.5, 0.524096)}
 						Size={UDim2.fromScale(1, 0.564915)}
-						Text={"EQUIP"}
+						Text={equipped ? "UNEQUIP" : "EQUIP"}
 						TextColor3={new Color3()}
 						TextScaled={true}
 					>
@@ -156,7 +195,7 @@ export default function RInventorySelected() {
 							key={"Txt"}
 							Position={UDim2.fromScale(0.5, 0.436018)}
 							Size={UDim2.fromScale(1, 1)}
-							Text={"EQUIP"}
+							Text={equipped ? "UNEQUIP" : "EQUIP"}
 							TextColor3={new Color3(1, 1, 1)}
 							TextScaled={true}
 						>
@@ -166,25 +205,25 @@ export default function RInventorySelected() {
 						</textlabel>
 					</textlabel>
 				</imagebutton>
+				<uiscale Scale={springScale}></uiscale>
 			</frame>
 
-			<viewportframe
-				AnchorPoint={new Vector2(0.5, 0.5)}
-				BackgroundTransparency={1}
-				key={"preview"}
-				Position={UDim2.fromScale(0.499926, 0.496482)}
-				Size={UDim2.fromScale(0.792336, 0.508028)}
-			/>
-			<ObjectViewport
-				Native={{
-					AnchorPoint: new Vector2(0.5, 0.5),
-					BackgroundTransparency: 1,
-					key: "preview",
-					Position: UDim2.fromScale(0.499926, 0.496482),
-					Size: UDim2.fromScale(0.792336, 0.508028),
-				}}
-				Object={item ?? Make("Model", {})}
-			></ObjectViewport>
+			{item !== undefined && (
+				<ObjectViewport
+					key={item.GetFullName()}
+					Native={{
+						AnchorPoint: new Vector2(0.5, 0.5),
+						BackgroundTransparency: 1,
+						key: "preview",
+						Position: UDim2.fromScale(0.499926, 0.496482),
+						Size: UDim2.fromScale(0.792336, 0.508028),
+					}}
+					Object={item.Clone()}
+					cf={item.GetPivot().mul(getClassCf(context?.Class || EItemClass.wendigo))}
+				>
+					<uiscale Scale={springScale}></uiscale>
+				</ObjectViewport>
+			)}
 
 			<imagelabel
 				BackgroundTransparency={1}
