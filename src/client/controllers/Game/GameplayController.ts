@@ -7,16 +7,23 @@ import { onCharacterAdded } from "client/modding/onCharacterAdded/interface";
 import { Events } from "client/network";
 import { ICharacter } from "shared/components/types/Character";
 import { Roles } from "shared/types/RoleTags";
+import { EntityController } from "./EntityController";
 
 @Controller({})
 export class GameplayController implements OnStart, onCharacterAdded {
 	private trove = new Trove();
 	private player = Players.LocalPlayer;
 	private GameplayContext = new InputContext("Gameplay");
+	constructor(private EntityController: EntityController) {}
 	onStart() {
 		this.GameplayContext.Add("eat", {
 			KeyboardAndMouse: Enum.KeyCode.E,
 			Gamepad: Enum.KeyCode.ButtonX,
+		});
+
+		this.GameplayContext.Add("scan", {
+			KeyboardAndMouse: Enum.KeyCode.Q,
+			Gamepad: Enum.KeyCode.ButtonY,
 		});
 
 		this.GameplayContext.Assign();
@@ -64,6 +71,13 @@ export class GameplayController implements OnStart, onCharacterAdded {
 					/** handling eat */
 					Events.gameplay.eat.fire(currentMushroom);
 				}
+			}
+		});
+
+		this.trove.bindToRenderStep("controls", Enum.RenderPriority.Input.Value, () => {
+			if (ActionsController.IsJustPressed("scan")) {
+				/** scan handling */
+				this.EntityController.scanMushrooms(10, 20, 150);
 			}
 		});
 	}

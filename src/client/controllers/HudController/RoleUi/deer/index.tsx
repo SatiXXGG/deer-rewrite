@@ -10,11 +10,6 @@ interface Props {
 export default function RDeerUi({ hunger }: Props = { hunger: 2000 }) {
 	const device = DeviceTypeHandler.GetMainInputType();
 	const { hunger: currentHunger, percentage } = useHunger(hunger ?? 1000);
-
-	useEffect(() => {
-		print(percentage);
-	}, [percentage]);
-
 	return (
 		<frame
 			AnchorPoint={new Vector2(1, 0)}

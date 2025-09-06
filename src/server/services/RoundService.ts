@@ -1,5 +1,5 @@
 import { Service, OnStart } from "@flamework/core";
-import { ServerStorage, Workspace } from "@rbxts/services";
+import { Workspace } from "@rbxts/services";
 import { Roles } from "shared/types/RoleTags";
 
 export enum Rounds {
@@ -35,7 +35,7 @@ const RoundsInfo: Record<Rounds, RoundInfo> = {
 		order: 3,
 	},
 	[Rounds.OnRound]: {
-		duration: 12,
+		duration: 50,
 		order: 4,
 	},
 	[Rounds.Survive]: {
