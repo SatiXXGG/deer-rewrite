@@ -2,6 +2,8 @@ import React, { useEffect } from "@rbxts/react";
 import RDeerContainer from "./container";
 import { ActionsController, DeviceTypeHandler, EInputDeviceType, EInputType } from "@rbxts/input-actions";
 import useHunger from "client/controllers/hooks/useHunger";
+import useUserState from "client/controllers/hooks/useState";
+import { EPlayerState } from "client/controllers/data/State";
 
 interface Props {
 	hunger?: number;
@@ -10,6 +12,11 @@ interface Props {
 export default function RDeerUi({ hunger }: Props = { hunger: 2000 }) {
 	const device = DeviceTypeHandler.GetMainInputType();
 	const { hunger: currentHunger, percentage } = useHunger(hunger ?? 1000);
+
+	const scanActive = useUserState(EPlayerState.scanning);
+	const eatingActive = useUserState(EPlayerState.eating);
+	const tauntActive = useUserState(EPlayerState.taunt);
+
 	return (
 		<frame
 			AnchorPoint={new Vector2(1, 0)}
@@ -63,6 +70,7 @@ export default function RDeerUi({ hunger }: Props = { hunger: 2000 }) {
 					SortOrder={Enum.SortOrder.LayoutOrder}
 				/>
 				<RDeerContainer
+					active={eatingActive}
 					action={() => {
 						ActionsController.Press("eat");
 					}}
@@ -71,12 +79,20 @@ export default function RDeerUi({ hunger }: Props = { hunger: 2000 }) {
 					text={device === EInputType.Gamepad ? "X" : device === EInputType.Touch ? "Touch" : "E"}
 				></RDeerContainer>
 				<RDeerContainer
+					active={tauntActive}
+					action={() => {
+						ActionsController.Press("taunt");
+					}}
 					key={"taunt"}
 					icon={"rbxassetid://86411530791856"}
 					text={device === EInputType.Gamepad ? "Y" : device === EInputType.Touch ? "Touch" : "T"}
 				></RDeerContainer>
 				<RDeerContainer
+					active={scanActive}
 					key={"locate"}
+					action={() => {
+						ActionsController.Press("scan");
+					}}
 					icon={"rbxassetid://98723517971757"}
 					text={device === EInputType.Gamepad ? "B" : device === EInputType.Touch ? "Touch" : "Q"}
 				></RDeerContainer>

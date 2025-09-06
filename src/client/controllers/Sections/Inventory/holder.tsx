@@ -9,8 +9,6 @@ export default function RInventoryHolder() {
 	const [skins, setSkins] = useState<GameItem[]>(Functions.inventory.getInventoryItems().expect());
 
 	useEffect(() => {
-		print("connecting event");
-
 		// solo cargar una vez el inventario
 		const conn = Events.inventory.addItem.connect((item) => {
 			print(item);

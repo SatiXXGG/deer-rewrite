@@ -57,8 +57,10 @@ export class DataService implements OnStart, onPlayerJoined {
 		});
 
 		Functions.inventory.getInventoryItems.setCallback((player) => {
-			const profile = this.getProfile(player);
-			return profile.Data.inventory;
+			return this.waitForLoad(player).then(() => {
+				const profile = this.getProfile(player);
+				return profile.Data.inventory;
+			});
 		});
 
 		Functions.skins.isEquipped.setCallback((player, Class, id) => {
