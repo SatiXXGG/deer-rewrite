@@ -1,6 +1,10 @@
-import React from "@rbxts/react";
+import React, { Element } from "@rbxts/react";
+import RQuestFrame from "./QuestFrame";
 
-export default function RQuestDaily() {
+interface Props {
+	children?: Element | Element[];
+}
+export default function RQuestDaily(props: Props) {
 	return (
 		<frame
 			BackgroundColor3={new Color3()}
@@ -113,6 +117,7 @@ export default function RQuestDaily() {
 						Padding={new UDim(0.0231417, 0)}
 						SortOrder={Enum.SortOrder.LayoutOrder}
 					/>
+					{props.children}
 				</scrollingframe>
 			</frame>
 		</frame>

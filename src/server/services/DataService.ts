@@ -6,15 +6,19 @@ import { EItemClass, GameItem } from "shared/types/GameItem";
 import { ItemService } from "./ItemService";
 import { EDeerSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } from "shared/data/Skins";
 import { Events, Functions } from "server/network";
+import { IQuestData } from "shared/data/Quest";
 
 interface IPlayerData {
 	cash: number;
 	inventory: GameItem[];
 	currentDeer: EDeerSkins;
 	currentWendigo: EWendigoSkins;
+	quests: IQuestData[];
 	lastJoin: number;
 	lastReward: number;
 	currentReward: number;
+	gaveDailyQuests: number;
+	gaveWeeklyQuests: number;
 }
 
 @Service({})
@@ -23,6 +27,7 @@ export class DataService implements OnStart, onPlayerJoined {
 
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
+		quests: [],
 		currentDeer: EDeerSkins.default,
 		currentWendigo: EWendigoSkins.default,
 		cash: 99999,
@@ -30,6 +35,8 @@ export class DataService implements OnStart, onPlayerJoined {
 		lastJoin: 0,
 		lastReward: 0,
 		currentReward: 0,
+		gaveDailyQuests: 0,
+		gaveWeeklyQuests: 0,
 	};
 	private Store = ProfileStore.New(this.DataKey, this.template);
 
@@ -105,6 +112,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		print(`🤠 Player ${player.Name} loaded!`);
 		print(profile.Data);
 		this.profiles.set(player, profile);
+		player.SetAttribute("loaded", true);
 	}
 
 	getProfile(player: Player) {
@@ -168,5 +176,14 @@ export class DataService implements OnStart, onPlayerJoined {
 	addCash(player: Player, amount: number) {
 		const profile = this.getProfile(player);
 		profile.Data.cash += amount;
+	}
+
+	waitForLoad(player: Player) {
+		return new Promise((resolve) => {
+			while (!player.GetAttribute("loaded")) {
+				task.wait();
+			}
+			resolve(undefined);
+		});
 	}
 }

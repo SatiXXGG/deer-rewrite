@@ -12,9 +12,14 @@
 	"eslint.format.enable": true,
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"cSpell.words": [
+		"canvasgroup",
 		"hitbox",
 		"imagebutton",
 		"imagelabel",
-		"Roact"
+		"Keypoint",
+		"rbxasset",
+		"Roact",
+		"uicorner",
+		"uistroke"
 	]
 }

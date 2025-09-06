@@ -1,6 +1,21 @@
-import React from "@rbxts/react";
+import { useMotion } from "@rbxts/pretty-react-hooks";
+import React, { useEffect } from "@rbxts/react";
 
-export default function RQuestDetails() {
+interface Props {
+	title: string;
+	current: number;
+	max: number;
+}
+
+export default function RQuestDetails(props: Props) {
+	const [barSize, barMotor] = useMotion(UDim2.fromScale(0, 1));
+
+	useEffect(() => {
+		barMotor.tween(UDim2.fromScale(props.current / props.max, 1), {
+			time: 0.25,
+		});
+	}, [props.current, props.max]);
+
 	return (
 		<frame
 			AnchorPoint={new Vector2(0, 0.5)}
@@ -29,7 +44,7 @@ export default function RQuestDetails() {
 				key={"Price"}
 				Position={UDim2.fromScale(0.5, 0.187219)}
 				Size={UDim2.fromScale(1, 0.421687)}
-				Text={"Kill 10 Deers"}
+				Text={`(${props.current}/${props.max}`}
 				TextColor3={new Color3()}
 				TextScaled={true}
 				TextXAlignment={Enum.TextXAlignment.Left}
@@ -49,7 +64,7 @@ export default function RQuestDetails() {
 					key={"Txt"}
 					Position={UDim2.fromScale(0.5, 0.45)}
 					Size={UDim2.fromScale(1, 1)}
-					Text={"Kill 10 Deers"}
+					Text={`${props.title} (${props.current}/${props.max})`}
 					TextColor3={new Color3(1, 1, 1)}
 					TextScaled={true}
 					TextXAlignment={Enum.TextXAlignment.Left}
@@ -90,7 +105,7 @@ export default function RQuestDetails() {
 					BackgroundTransparency={1}
 					key={"Holder"}
 					Position={UDim2.fromScale(0.5, 0.5)}
-					Size={UDim2.fromScale(1.00385, 1)}
+					Size={barSize}
 				>
 					<imagelabel
 						AnchorPoint={new Vector2(0, 0.5)}
@@ -98,7 +113,7 @@ export default function RQuestDetails() {
 						Image={"rbxassetid://106739052273928"}
 						key={"Loader"}
 						Position={UDim2.fromScale(-0.0842912, 0.5)}
-						ScaleType={Enum.ScaleType.Fit}
+						ScaleType={Enum.ScaleType.Crop}
 						Size={UDim2.fromScale(1, 1)}
 						SliceCenter={new Rect(36, 0, 690, 0)}
 						SliceScale={0.4}

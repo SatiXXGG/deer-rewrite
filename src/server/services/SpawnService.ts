@@ -1,16 +1,35 @@
 import { Service, OnStart } from "@flamework/core";
 import { MapService } from "./MapService";
-import { CollectionService, Players, ReplicatedStorage, ServerStorage } from "@rbxts/services";
+import { CollectionService, Players, ReplicatedStorage, ServerStorage, Workspace } from "@rbxts/services";
 import { ICharacter } from "shared/components/types/Character";
 import { RoleArray, Roles } from "shared/types/RoleTags";
 import { Trove } from "@rbxts/trove";
 import { AvatarService } from "./AvatarService";
-
+import Make from "@rbxts/make";
+import { QuestService } from "./QuestService";
+import { EQuests } from "shared/data/Quest";
 @Service({})
 export class SpawnService implements OnStart {
-	constructor(private MapService: MapService, private AvatarService: AvatarService) {}
-	onStart() {}
-
+	constructor(
+		private MapService: MapService,
+		private AvatarService: AvatarService,
+		private QuestService: QuestService,
+	) {}
+	onStart() {
+		Make("Part", {
+			Parent: Workspace,
+			Name: "test",
+			Anchored: true,
+			Position: new Vector3(0, 5, 0),
+			Children: [
+				Make("ClickDetector", {
+					MouseClick: (player: Player) => {
+						this.QuestService.incrementQuests(player, EQuests.test);
+					},
+				}),
+			],
+		});
+	}
 	spawnMushroom() {
 		if (this.MapService.currentMap) {
 			print("🍄");
@@ -25,6 +44,7 @@ export class SpawnService implements OnStart {
 				);
 				mushroomModel.ScaleTo(math.random(1, 1.5));
 				mushroomModel.Parent = this.MapService.currentMap;
+				mushroomModel.AddTag("mushroom");
 			}
 		} else {
 			warn("Attempt to spawn mushroom without any map");
@@ -77,16 +97,16 @@ export class SpawnService implements OnStart {
 	}
 
 	spawnUser(player: Player) {
+		player.AddTag(Roles.playing);
+		player.AddTag(Roles.deer);
 		const character = this.AvatarService.changeDeer(player);
 		if (character) {
 			//* moves to the spawn
 			const spawn = this.MapService.getSpawn();
 			if (spawn) {
-				print("🧖🏻‍♂️ User spawned");
-				player.AddTag(Roles.playing);
-				player.AddTag(Roles.deer);
 				character.HumanoidRootPart.CFrame = spawn.CFrame;
 				this.autoRemoveTags(player, Roles.deer);
+				this.bindHunger(player, character);
 			}
 			//* tag removal
 		}
@@ -94,16 +114,15 @@ export class SpawnService implements OnStart {
 
 	spawnWendigo(player: Player) {
 		const cc = player.Character as ICharacter | undefined;
-		print(cc);
+		player.AddTag(Roles.playing);
+		player.AddTag(Roles.wendigo);
 		if (cc) {
 			const currentPosition = cc.HumanoidRootPart.CFrame;
 			const character = this.AvatarService.changeWendigo(player);
-			print(character);
 			if (character) {
 				//* moves to the spawn
 				print("🧟 Wendigo spawned");
-				player.AddTag(Roles.playing);
-				player.AddTag(Roles.wendigo);
+
 				character.HumanoidRootPart.CFrame = currentPosition;
 				this.autoRemoveTags(player, Roles.wendigo);
 			}
@@ -139,5 +158,23 @@ export class SpawnService implements OnStart {
 
 	getWendigo() {
 		return CollectionService.GetTagged(Roles.wendigo) as Player[];
+	}
+
+	bindHunger(player: Player, character: ICharacter) {
+		//* Resets
+		player.SetAttribute("Hunger", 1000);
+		/** Hunger handling */
+		const loop = coroutine.create(() => {
+			while (character.Humanoid) {
+				const currentHunger = player.GetAttribute("Hunger") as number;
+				if (currentHunger > 0) {
+					player.SetAttribute("Hunger", math.clamp(currentHunger - 1, 0, 1000));
+				}
+				task.wait();
+			}
+			coroutine.yield();
+			coroutine.close(loop);
+		});
+		coroutine.resume(loop);
 	}
 }

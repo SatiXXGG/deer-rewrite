@@ -1,11 +1,22 @@
 import { Networking } from "@flamework/networking";
 import { EItemClass, GameItem } from "./types/GameItem";
+import { IQuestData } from "./data/Quest";
 
-interface ClientToServerEvents {}
+interface ClientToServerEvents {
+	bow: {
+		shot(hit: Vector3): void;
+	};
+	gameplay: {
+		eat(mushroom: Model): void;
+	};
+}
 
 interface ServerToClientEvents {
 	inventory: {
 		addItem(item: GameItem): void;
+	};
+	quests: {
+		updateQuest(id: number, current: number): void;
 	};
 }
 
@@ -17,6 +28,9 @@ interface ClientToServerFunctions {
 	inventory: {
 		getInventoryItems(): GameItem[];
 		equip(Class: EItemClass, id: string): boolean;
+	};
+	quests: {
+		getQuests(): IQuestData[];
 	};
 }
 

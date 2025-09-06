@@ -1,19 +1,63 @@
-import React, { Ref } from "@rbxts/react";
+import React, { Ref, useEffect, useState } from "@rbxts/react";
 import RQuestHeader from "./header";
 import RQuestDaily from "./daily";
 import RQuestWeekly from "./weekly";
+import RQuestFrame from "./QuestFrame";
+import { GetQuest, IQuest } from "shared/data/Quest";
+import { Events, Functions } from "client/network";
+import { Players } from "@rbxts/services";
 
 interface Props {
 	ref: Ref<ImageLabel>;
 }
-export default function RQuestsUi(props: Props) {
+
+export default function RQuestsUi({ ref }: Props) {
+	const [quests, setQuests] = useState<IQuest[]>([]);
+	const [dailyQuests, setDailyQuests] = useState<IQuest[]>([]);
+	const [weeklyQuests, setWeeklyQuests] = useState<IQuest[]>([]);
+
+	useEffect(() => {
+		const daily = quests.filter((q) => q.expires / 60 <= 1);
+		const weekly = quests.filter((q) => q.expires / 60 >= 7);
+
+		setDailyQuests(daily);
+		setWeeklyQuests(weekly);
+	}, [quests]);
+
+	useEffect(() => {
+		Functions.quests
+			.getQuests()
+			.timeout(1)
+			.then((result) => {
+				const newQuests: IQuest[] = [];
+				result.forEach((id) => {
+					const data = GetQuest(id);
+					if (data) newQuests.push(data);
+				});
+				setQuests(newQuests);
+			});
+
+		const conn = Events.quests.updateQuest.connect((id, newCurrent) => {
+			setQuests((prev) => {
+				const copy = [...prev];
+				const index = copy.findIndex((q) => q.id === id);
+				if (index > -1) {
+					copy[index] = { ...copy[index], current: newCurrent };
+				}
+				return copy;
+			});
+		});
+
+		return () => conn.Disconnect();
+	}, []);
+
 	return (
 		<imagelabel
-			ref={props.ref}
+			ref={ref}
 			AnchorPoint={new Vector2(0.5, 0.5)}
 			BackgroundTransparency={1}
 			Image={"rbxassetid://139895220411161"}
-			key={"Quests"}
+			key="Quests"
 			Position={UDim2.fromScale(0.5, 0.5)}
 			ScaleType={Enum.ScaleType.Fit}
 			Size={UDim2.fromScale(1, 1)}
@@ -21,24 +65,31 @@ export default function RQuestsUi(props: Props) {
 			<frame
 				AnchorPoint={new Vector2(0.5, 0.5)}
 				BackgroundTransparency={1}
-				key={"Holder"}
+				key="Holder"
 				Position={UDim2.fromScale(0.5, 0.587719)}
 				Size={UDim2.fromScale(0.945148, 0.733898)}
 			>
 				<uilistlayout
-					key={"UIListLayout"}
+					key="UIListLayout"
 					FillDirection={Enum.FillDirection.Horizontal}
 					HorizontalAlignment={Enum.HorizontalAlignment.Center}
 					Padding={new UDim(0.0178571, 0)}
 					SortOrder={Enum.SortOrder.LayoutOrder}
 					VerticalAlignment={Enum.VerticalAlignment.Center}
 				/>
-				<RQuestDaily></RQuestDaily>
-				<RQuestWeekly></RQuestWeekly>
+				<RQuestDaily>
+					{dailyQuests.map((quest) => (
+						<RQuestFrame key={quest.id} max={quest.max} current={quest.current} title={quest.title} />
+					))}
+				</RQuestDaily>
+				<RQuestWeekly>
+					{weeklyQuests.map((quest) => (
+						<RQuestFrame key={quest.id} max={quest.max} current={quest.current} title={quest.title} />
+					))}
+				</RQuestWeekly>
 			</frame>
-			<RQuestHeader></RQuestHeader>
-
-			<uiaspectratioconstraint key={"UIAspectRatioConstraint"} AspectRatio={2.00847} />
+			<RQuestHeader />
+			<uiaspectratioconstraint key="UIAspectRatioConstraint" AspectRatio={2.00847} />
 		</imagelabel>
 	);
 }
