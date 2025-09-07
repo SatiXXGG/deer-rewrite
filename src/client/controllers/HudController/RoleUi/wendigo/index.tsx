@@ -1,4 +1,4 @@
-import React, { useEffect } from "@rbxts/react";
+import React from "@rbxts/react";
 import { ActionsController, DeviceTypeHandler, EInputType } from "@rbxts/input-actions";
 import RWendigoContainer from "./container";
 import useUserState from "client/controllers/hooks/useState";
