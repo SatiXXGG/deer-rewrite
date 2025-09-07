@@ -16,6 +16,7 @@ class OnCharacterAdded implements OnStart {
 		});
 
 		this.localPlayer.CharacterAdded.Connect((character) => {
+			character.WaitForChild("Humanoid");
 			listeners.forEach((listener) => {
 				task.spawn(() => {
 					listener.onCharacterAdded(character as ICharacter);
@@ -24,6 +25,7 @@ class OnCharacterAdded implements OnStart {
 		});
 
 		if (this.localPlayer.Character) {
+			this.localPlayer.Character.WaitForChild("Humanoid");
 			listeners.forEach((listener) => {
 				task.spawn(() => {
 					listener.onCharacterAdded(this.localPlayer.Character as ICharacter);

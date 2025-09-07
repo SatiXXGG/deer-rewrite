@@ -1,5 +1,5 @@
 import { Service, OnStart } from "@flamework/core";
-import { Workspace } from "@rbxts/services";
+import { CollectionService, Workspace } from "@rbxts/services";
 import { Roles } from "shared/types/RoleTags";
 
 export enum Rounds {
@@ -35,7 +35,7 @@ const RoundsInfo: Record<Rounds, RoundInfo> = {
 		order: 3,
 	},
 	[Rounds.OnRound]: {
-		duration: 50,
+		duration: 5,
 		order: 4,
 	},
 	[Rounds.Survive]: {
@@ -54,6 +54,7 @@ export class RoundService implements OnStart {
 	private current: Rounds = Rounds.Intermission;
 	private lastChange: number = tick();
 	private roundChange = new Set<ChangeCallback>();
+	private gamingRounds = [Rounds.Hide, Rounds.Survive, Rounds.OnRound];
 	getNext() {
 		const currentInfo = RoundsInfo[this.current];
 		const currentN = currentInfo.order;
@@ -115,6 +116,28 @@ export class RoundService implements OnStart {
 		});
 		this.updateRound();
 		coroutine.resume(loop);
+
+		//* killing win detection
+
+		CollectionService.GetInstanceRemovedSignal(Roles.deer).Connect((player) => {
+			if (this.gamingRounds.includes(this.current)) {
+				const currentDeers = CollectionService.GetTagged(Roles.deer).size();
+				if (currentDeers <= 0) {
+					print("No deers left 🥶");
+					this.win(Roles.hunter);
+				}
+			}
+		});
+
+		CollectionService.GetInstanceRemovedSignal(Roles.hunter).Connect((player) => {
+			if (this.gamingRounds.includes(this.current)) {
+				const currentHunters = CollectionService.GetTagged(Roles.hunter).size();
+				if (currentHunters <= 0) {
+					print("No hunters left 🥶");
+					this.win(Roles.deer);
+				}
+			}
+		});
 	}
 
 	get() {

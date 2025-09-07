@@ -97,6 +97,31 @@ export default function RDeerUi({ hunger }: Props = { hunger: 2000 }) {
 					text={device === EInputType.Gamepad ? "B" : device === EInputType.Touch ? "Touch" : "Q"}
 				></RDeerContainer>
 			</frame>
+
+			{/** Mobile button */}
+			{device === EInputType.Touch && (
+				<textbutton
+					Size={UDim2.fromScale(0.3, 1)}
+					BackgroundColor3={Color3.fromRGB(0, 0, 0)}
+					Position={UDim2.fromScale(2.3, -0.1)}
+					BackgroundTransparency={0.5}
+					Text={"RUN"}
+					FontFace={new Font("rbxasset://fonts/families/SourceSansPro.json")}
+					TextColor3={Color3.fromRGB(255, 255, 255)}
+					TextScaled={true}
+					Event={{
+						MouseButton1Down: () => {
+							ActionsController.Press("run");
+						},
+						MouseButton1Up: () => {
+							ActionsController.Release("run");
+						},
+					}}
+				>
+					<uicorner CornerRadius={new UDim(1, 0)}></uicorner>
+					<uitextsizeconstraint MaxTextSize={50}></uitextsizeconstraint>
+				</textbutton>
+			)}
 		</frame>
 	);
 }

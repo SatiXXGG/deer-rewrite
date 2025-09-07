@@ -10,6 +10,7 @@ import getRole from "shared/utils/getRole";
 import { Roles } from "shared/types/RoleTags";
 import RTransition from "../Elements/Transition";
 import RDeerUi from "./RoleUi/deer";
+import RWendigoUi from "./RoleUi/wendigo";
 @Controller({})
 export class HudController implements OnStart, onCharacterAdded {
 	onStart() {}
@@ -34,6 +35,13 @@ export class HudController implements OnStart, onCharacterAdded {
 					<RTransition></RTransition>
 					<RTimer></RTimer>
 					<RDeerUi></RDeerUi>
+				</screengui>,
+			);
+		} else if (role === Roles.wendigo) {
+			root.render(
+				<screengui ZIndexBehavior={"Sibling"} IgnoreGuiInset={true} ResetOnSpawn={true}>
+					<RTimer></RTimer>
+					<RWendigoUi></RWendigoUi>
 				</screengui>,
 			);
 		}

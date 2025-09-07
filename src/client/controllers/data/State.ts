@@ -7,6 +7,8 @@ export enum EPlayerState {
 	none = "none",
 	hungry = "hungry",
 	stunned = "stunned",
+	attacking = "attacking",
+	screaming = "screaming",
 }
 export const PlayerState = new Statefy<EPlayerState>(EPlayerState.none);
 PlayerState.override = false;

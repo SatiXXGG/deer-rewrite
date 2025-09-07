@@ -10,6 +10,8 @@ import { QuestService } from "./QuestService";
 import { EQuests } from "shared/data/Quest";
 import { Events } from "server/network";
 import { DataService } from "./DataService";
+import getRole from "shared/utils/getRole";
+import { Settings } from "shared/data/Settings";
 @Service({})
 export class SpawnService implements OnStart {
 	constructor(
@@ -30,6 +32,33 @@ export class SpawnService implements OnStart {
 					},
 				}),
 			],
+		});
+
+		Events.gameplay.attack.connect((player) => {
+			const character = player.Character as ICharacter | undefined;
+			if (getRole(player) === Roles.wendigo && character) {
+				const cooldown = player.GetAttribute("ac") as boolean | undefined;
+				if (cooldown) return;
+				player.SetAttribute("cooldown", true);
+				//* kill logic
+				const players = CollectionService.GetTagged(Roles.hunter) as Player[];
+
+				players.forEach((target) => {
+					const targetCharacter = target.Character as ICharacter | undefined;
+					if (targetCharacter && targetCharacter.Humanoid.Health > 0) {
+						const distance = targetCharacter.HumanoidRootPart.Position.sub(
+							character.HumanoidRootPart.Position,
+						).Magnitude;
+						if (distance <= Settings.wendigo.attackDistance) {
+							targetCharacter.Humanoid.Health -= Settings.wendigo.attackDamage;
+						}
+					}
+				});
+
+				task.delay(0.2, () => {
+					player.SetAttribute("cooldown", false);
+				});
+			}
 		});
 	}
 	spawnMushroom() {
@@ -98,7 +127,14 @@ export class SpawnService implements OnStart {
 		}
 	}
 
+	cleanTags(player: Player) {
+		RoleArray.forEach((role) => {
+			player.RemoveTag(role);
+		});
+	}
+
 	spawnUser(player: Player) {
+		this.cleanTags(player);
 		player.AddTag(Roles.playing);
 		player.AddTag(Roles.deer);
 		const character = this.AvatarService.changeDeer(player);
@@ -115,6 +151,7 @@ export class SpawnService implements OnStart {
 	}
 
 	spawnWendigo(player: Player) {
+		this.cleanTags(player);
 		const cc = player.Character as ICharacter | undefined;
 		player.AddTag(Roles.playing);
 		player.AddTag(Roles.wendigo);

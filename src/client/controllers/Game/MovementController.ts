@@ -49,10 +49,10 @@ export class MovementController implements OnStart, onCharacterAdded {
 		});
 	}
 	deer(character: ICharacter) {
-		character.Humanoid.WalkSpeed = 16;
+		character.Humanoid.WalkSpeed = 8;
 	}
 	wendigo(character: ICharacter) {
-		character.Humanoid.WalkSpeed = 20;
+		character.Humanoid.WalkSpeed = 24;
 		this.AnimationController.play("transformation");
 	}
 }

@@ -11,6 +11,7 @@ import { EntityController } from "./EntityController";
 import { EPlayerState, PlayerState } from "../data/State";
 import { AnimationController } from "./AnimationController";
 import { DeerAnimations, WendigoAnimations } from "shared/data/Animations";
+import getRole from "shared/utils/getRole";
 
 @Controller({ loadOrder: 2 })
 export class GameplayController implements OnStart, onCharacterAdded {
@@ -39,6 +40,11 @@ export class GameplayController implements OnStart, onCharacterAdded {
 			Gamepad: Enum.KeyCode.ButtonL2,
 		});
 
+		this.GameplayContext.Add("attack", {
+			KeyboardAndMouse: Enum.UserInputType.MouseButton1,
+			Gamepad: Enum.KeyCode.ButtonR2,
+		});
+
 		this.GameplayContext.Assign();
 		InputActionsInitializationHelper.InitAll();
 
@@ -53,6 +59,10 @@ export class GameplayController implements OnStart, onCharacterAdded {
 		this.AnimationController.create(WendigoAnimations.idle, "idleWendigo");
 		this.AnimationController.create(WendigoAnimations.walk, "walkWendigo");
 		this.AnimationController.create(WendigoAnimations.transformation, "transformation");
+		this.AnimationController.create(WendigoAnimations.scream, "scream");
+		this.AnimationController.create(WendigoAnimations.attackL, "attackL");
+		this.AnimationController.create(WendigoAnimations.attackR, "attackR");
+
 		/** States */
 
 		PlayerState.onAdd((state) => {
@@ -66,8 +76,10 @@ export class GameplayController implements OnStart, onCharacterAdded {
 		print("cleanup");
 		this.trove.clean();
 		const tags = this.player.GetTags();
-		if (tags.includes(Roles.deer)) {
+		if (getRole(this.player) === Roles.deer) {
 			this.deer(character);
+		} else if (getRole(this.player) === Roles.wendigo) {
+			this.wendigo(character);
 		}
 	}
 
@@ -76,7 +88,6 @@ export class GameplayController implements OnStart, onCharacterAdded {
 		let lastDistance = 0;
 		let currentMushroom: Model | undefined = undefined;
 		const root = character.HumanoidRootPart;
-		character.Humanoid.WalkSpeed = 8;
 
 		const mushroomHighlight = Make("Highlight", {
 			FillColor: Color3.fromRGB(0, 255, 0),
@@ -182,6 +193,36 @@ export class GameplayController implements OnStart, onCharacterAdded {
 					PlayerState.remove(EPlayerState.hungry);
 				}
 			}
+		});
+	}
+
+	wendigo(character: ICharacter) {
+		let left = false;
+		this.trove.bindToRenderStep("controls", Enum.RenderPriority.Input.Value, () => {
+			if (ActionsController.IsJustPressed("attack") && !PlayerState.listHasState(EPlayerState.attacking)) {
+				this.attack();
+				if (left) {
+					left = false;
+					this.AnimationController.play("attackL");
+				} else {
+					left = true;
+					this.AnimationController.play("attackR");
+				}
+			} else if (ActionsController.IsJustPressed("taunt") && !PlayerState.listHasState(EPlayerState.screaming)) {
+				Events.gameplay.taunt.fire();
+				PlayerState.add(EPlayerState.screaming, math.huge);
+				this.AnimationController.play("scream");
+				task.delay(5, () => {
+					PlayerState.remove(EPlayerState.screaming);
+				});
+			}
+		});
+	}
+	attack() {
+		PlayerState.add(EPlayerState.attacking, math.huge);
+		Events.gameplay.attack.fire();
+		task.delay(0.18, () => {
+			PlayerState.remove(EPlayerState.attacking);
 		});
 	}
 }

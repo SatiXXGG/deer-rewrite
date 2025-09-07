@@ -42,6 +42,8 @@ export class EntityService implements OnStart {
 					//* emission
 					taunt.Emit(25);
 				}
+			} else if (character && getRole(player) === Roles.wendigo) {
+				print("Wendigo scream");
 			}
 		});
 	}

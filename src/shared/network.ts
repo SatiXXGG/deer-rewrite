@@ -9,6 +9,7 @@ interface ClientToServerEvents {
 	gameplay: {
 		eat(mushroom: Model): void;
 		taunt(): void;
+		attack(): void;
 	};
 }
 
