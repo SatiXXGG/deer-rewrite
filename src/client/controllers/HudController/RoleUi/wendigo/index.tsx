@@ -2,7 +2,7 @@ import React, { useEffect } from "@rbxts/react";
 import { ActionsController, DeviceTypeHandler, EInputType } from "@rbxts/input-actions";
 import RWendigoContainer from "./container";
 import useUserState from "client/controllers/hooks/useState";
-import { EPlayerState } from "client/controllers/data/State";
+import { EPlayerState, PlayerState } from "client/controllers/data/State";
 
 interface Props {
 	hunger?: number;
@@ -61,7 +61,12 @@ export default function RWendigoUi() {
 					TextScaled={true}
 					Event={{
 						MouseButton1Down: () => {
+							if (PlayerState.listHasState(EPlayerState.attacking)) return;
 							ActionsController.Press("attack");
+							PlayerState.add(EPlayerState.attacking, math.huge);
+							task.delay(0.18, () => {
+								PlayerState.remove(EPlayerState.attacking);
+							});
 						},
 						MouseButton1Up: () => {
 							ActionsController.Release("attack");
