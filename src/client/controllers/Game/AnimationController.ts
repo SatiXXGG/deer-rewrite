@@ -38,8 +38,17 @@ export class AnimationController implements OnStart, onCharacterAdded {
 		this.AnimationInstances.set(name, animation);
 	}
 
-	play(name: string) {
-		this.LoadedInstances.get(name)?.Play();
+	play(name: string, negate: boolean = false) {
+		if (negate) {
+			this.LoadedInstances.forEach((loaded, currentName) => {
+				if (name !== currentName) {
+					loaded.Stop();
+				}
+			});
+		}
+		const x = this.LoadedInstances.get(name);
+		if (x?.IsPlaying) return;
+		x?.Play();
 	}
 
 	stop(name: string) {

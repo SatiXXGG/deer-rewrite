@@ -5,6 +5,10 @@ export enum EDeerSkins {
 	default = "default",
 }
 
+export enum ETauntSkins {
+	default = "default",
+}
+
 export enum EWendigoSkins {
 	default = "default",
 	bigFoot = "BigFoot",
@@ -95,6 +99,16 @@ export const WendigoSkinsInfo: Record<EWendigoSkins, IBuyableInfo> = {
 		startWith: false,
 		price: 0,
 		display: "Blue",
+	},
+};
+
+export const TauntSkinsInfo: Record<ETauntSkins, IBuyableInfo> = {
+	[ETauntSkins.default]: {
+		price: 0,
+		display: "Default",
+		startWith: true,
+		id: ETauntSkins.default,
+		class: EItemClass.taunt,
 	},
 };
 

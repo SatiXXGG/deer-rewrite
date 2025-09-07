@@ -4,3 +4,7 @@ export interface ICharacter extends Model {
 	};
 	HumanoidRootPart: Part;
 }
+
+export interface IDeerSkin extends ICharacter {
+	taunt: Attachment;
+}

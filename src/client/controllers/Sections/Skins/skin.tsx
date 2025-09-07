@@ -19,7 +19,9 @@ export default function RShopElement(props: IProps) {
 	const springScale = useSpring(mainScale);
 
 	const container = Containers[info.class];
-	const preview = container.FindFirstChild(info.id)!.Clone() as Model;
+	let preview = container.FindFirstChild(info.id) as Model | undefined;
+	assert(preview, "Preview is undefined: " + info.display + " " + info.id);
+	preview = preview.Clone();
 	const buttonEvents: React.InstanceEvent<ImageButton> = {
 		Activated: () => {
 			if (isBought) return;
@@ -36,7 +38,7 @@ export default function RShopElement(props: IProps) {
 		},
 	};
 	assert(preview !== undefined, "Preview is undefined: " + info.display + " " + info.id);
-	const cf = preview.GetPivot().mul(getClassCf(info.class));
+	const cf = info.class !== EItemClass.taunt ? preview.GetPivot().mul(getClassCf(info.class)) : new CFrame();
 	//* cframe adjustment
 
 	return (
@@ -47,15 +49,17 @@ export default function RShopElement(props: IProps) {
 			ScaleType={Enum.ScaleType.Fit}
 			Size={UDim2.fromScale(0.487923, 1)}
 		>
-			<ObjectViewport
-				Native={{
-					Size: UDim2.fromScale(0.45, 0.9),
-					Position: UDim2.fromScale(0, 0.01),
-					BackgroundTransparency: 1,
-				}}
-				Object={preview!}
-				cf={cf}
-			></ObjectViewport>
+			{info.class !== EItemClass.taunt && (
+				<ObjectViewport
+					Native={{
+						Size: UDim2.fromScale(0.45, 0.9),
+						Position: UDim2.fromScale(0, 0.01),
+						BackgroundTransparency: 1,
+					}}
+					Object={preview!}
+					cf={cf}
+				></ObjectViewport>
+			)}
 			<textlabel
 				AnchorPoint={new Vector2(0.5, 0)}
 				BackgroundTransparency={1}

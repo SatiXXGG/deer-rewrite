@@ -8,6 +8,8 @@ import { AvatarService } from "./AvatarService";
 import Make from "@rbxts/make";
 import { QuestService } from "./QuestService";
 import { EQuests } from "shared/data/Quest";
+import { Events } from "server/network";
+import { DataService } from "./DataService";
 @Service({})
 export class SpawnService implements OnStart {
 	constructor(

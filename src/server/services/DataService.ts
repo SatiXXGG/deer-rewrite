@@ -4,7 +4,7 @@ import { Players } from "@rbxts/services";
 import { onPlayerJoined } from "server/modding/onPlayerJoined/interface";
 import { EItemClass, GameItem } from "shared/types/GameItem";
 import { ItemService } from "./ItemService";
-import { EDeerSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } from "shared/data/Skins";
+import { EDeerSkins, ETauntSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } from "shared/data/Skins";
 import { Events, Functions } from "server/network";
 import { IQuestData } from "shared/data/Quest";
 
@@ -13,6 +13,7 @@ interface IPlayerData {
 	inventory: GameItem[];
 	currentDeer: EDeerSkins;
 	currentWendigo: EWendigoSkins;
+	currentTaunt: ETauntSkins;
 	quests: IQuestData[];
 	lastJoin: number;
 	lastReward: number;
@@ -30,6 +31,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		quests: [],
 		currentDeer: EDeerSkins.default,
 		currentWendigo: EWendigoSkins.default,
+		currentTaunt: ETauntSkins.default,
 		cash: 99999,
 		inventory: [],
 		lastJoin: 0,
@@ -70,6 +72,8 @@ export class DataService implements OnStart, onPlayerJoined {
 					return profile.Data.currentDeer === id;
 				} else if (Class === EItemClass.wendigo) {
 					return profile.Data.currentWendigo === id;
+				} else if (Class === EItemClass.taunt) {
+					return profile.Data.currentTaunt === id;
 				}
 			}
 			return false;
@@ -91,6 +95,13 @@ export class DataService implements OnStart, onPlayerJoined {
 						return false;
 					}
 					profile.Data.currentWendigo = id as EWendigoSkins;
+					return true;
+				} else if (Class === EItemClass.taunt) {
+					if (profile.Data.currentTaunt === id) {
+						profile.Data.currentTaunt = ETauntSkins.default;
+						return false;
+					}
+					profile.Data.currentTaunt = id as ETauntSkins;
 					return true;
 				}
 			}
@@ -140,6 +151,9 @@ export class DataService implements OnStart, onPlayerJoined {
 				break;
 			case EItemClass.wendigo:
 				profile.Data.currentWendigo = id as EWendigoSkins;
+				break;
+			case EItemClass.taunt:
+				profile.Data.currentTaunt = id as ETauntSkins;
 				break;
 			default:
 				break;

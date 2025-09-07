@@ -10,7 +10,7 @@ import { Roles } from "shared/types/RoleTags";
 import { EntityController } from "./EntityController";
 import { EPlayerState, PlayerState } from "../data/State";
 import { AnimationController } from "./AnimationController";
-import { DeerAnimations } from "shared/data/Animations";
+import { DeerAnimations, WendigoAnimations } from "shared/data/Animations";
 
 @Controller({ loadOrder: 2 })
 export class GameplayController implements OnStart, onCharacterAdded {
@@ -26,15 +26,42 @@ export class GameplayController implements OnStart, onCharacterAdded {
 
 		this.GameplayContext.Add("scan", {
 			KeyboardAndMouse: Enum.KeyCode.Q,
+			Gamepad: Enum.KeyCode.ButtonB,
+		});
+
+		this.GameplayContext.Add("taunt", {
+			KeyboardAndMouse: Enum.KeyCode.T,
 			Gamepad: Enum.KeyCode.ButtonY,
+		});
+
+		this.GameplayContext.Add("run", {
+			KeyboardAndMouse: Enum.KeyCode.LeftShift,
+			Gamepad: Enum.KeyCode.ButtonL2,
 		});
 
 		this.GameplayContext.Assign();
 		InputActionsInitializationHelper.InitAll();
 
-		/** Animations */
-		this.AnimationController.create(DeerAnimations.eating, "eat");
+		/** Animations deer */
+		this.AnimationController.create(DeerAnimations.eating, "eatDeer");
+		this.AnimationController.create(DeerAnimations.taunt, "tauntDeer");
+		this.AnimationController.create(DeerAnimations.run, "runDeer");
+		this.AnimationController.create(DeerAnimations.idle, "idleDeer");
+		this.AnimationController.create(DeerAnimations.walk, "walkDeer");
+		/** Animations wendigo */
+		this.AnimationController.create(WendigoAnimations.run, "runWendigo");
+		this.AnimationController.create(WendigoAnimations.idle, "idleWendigo");
+		this.AnimationController.create(WendigoAnimations.walk, "walkWendigo");
+		this.AnimationController.create(WendigoAnimations.transformation, "transformation");
+		/** States */
+
+		PlayerState.onAdd((state) => {
+			if (state === EPlayerState.hungry || state === EPlayerState.stunned) {
+				ActionsController.Release("run");
+			}
+		});
 	}
+
 	onCharacterAdded(character: ICharacter): void {
 		print("cleanup");
 		this.trove.clean();
@@ -49,6 +76,7 @@ export class GameplayController implements OnStart, onCharacterAdded {
 		let lastDistance = 0;
 		let currentMushroom: Model | undefined = undefined;
 		const root = character.HumanoidRootPart;
+		character.Humanoid.WalkSpeed = 8;
 
 		const mushroomHighlight = Make("Highlight", {
 			FillColor: Color3.fromRGB(0, 255, 0),
@@ -77,7 +105,7 @@ export class GameplayController implements OnStart, onCharacterAdded {
 					/** handling eat */
 					Events.gameplay.eat.fire(currentMushroom);
 					PlayerState.add(EPlayerState.eating, math.huge);
-					this.AnimationController.play("eat");
+					this.AnimationController.play("eatDeer");
 					task.delay(3, () => {
 						PlayerState.remove(EPlayerState.eating);
 					});
@@ -119,6 +147,40 @@ export class GameplayController implements OnStart, onCharacterAdded {
 				task.delay(20, () => {
 					PlayerState.remove(EPlayerState.scanning);
 				});
+			} else if (ActionsController.IsJustPressed("taunt") && !PlayerState.listHasState(EPlayerState.taunt)) {
+				Events.gameplay.taunt.fire();
+				PlayerState.add(EPlayerState.taunt, math.huge);
+				this.AnimationController.play("tauntDeer");
+				task.delay(3, () => {
+					PlayerState.remove(EPlayerState.taunt);
+				});
+			} else if (
+				ActionsController.IsJustPressed("run") &&
+				!PlayerState.listHasState(EPlayerState.stunned) &&
+				!PlayerState.listHasState(EPlayerState.hungry)
+			) {
+				this.AnimationController.play("runDeer");
+				character.Humanoid.WalkSpeed = 25;
+			} else if (ActionsController.IsJustReleased("run") && !PlayerState.listHasState(EPlayerState.hungry)) {
+				this.AnimationController.stop("runDeer");
+				character.Humanoid.WalkSpeed = 8;
+				if (character.Humanoid.MoveDirection.Magnitude >= 1) {
+					this.AnimationController.play("walkDeer");
+				} else {
+					this.AnimationController.play("idleDeer");
+				}
+			}
+		});
+
+		this.trove.connect(this.player.GetAttributeChangedSignal("Hunger"), () => {
+			const current = this.player.GetAttribute("Hunger") as number | undefined;
+			if (current !== undefined) {
+				if (current <= 0) {
+					PlayerState.add(EPlayerState.hungry, math.huge);
+					character.Humanoid.WalkSpeed = 8;
+				} else {
+					PlayerState.remove(EPlayerState.hungry);
+				}
 			}
 		});
 	}

@@ -7,15 +7,8 @@ import { ICharacter } from "shared/components/types/Character";
 import { DeerAnimations, WendigoAnimations } from "shared/data/Animations";
 import { Roles } from "shared/types/RoleTags";
 import getRole from "shared/utils/getRole";
-
-function animate(humanoid: ICharacter["Humanoid"], id: string) {
-	const anim = Make("Animation", {
-		AnimationId: id,
-		Parent: humanoid,
-	});
-
-	return humanoid.Animator.LoadAnimation(anim);
-}
+import { AnimationController } from "./AnimationController";
+import { EPlayerState, PlayerState } from "../data/State";
 
 @Controller({})
 export class MovementController implements OnStart, onCharacterAdded {
@@ -25,6 +18,7 @@ export class MovementController implements OnStart, onCharacterAdded {
 		[Roles.deer]: (character: ICharacter) => this.deer(character),
 		[Roles.wendigo]: (character: ICharacter) => this.wendigo(character),
 	};
+	constructor(private AnimationController: AnimationController) {}
 	onStart() {}
 	onCharacterAdded(character: ICharacter): void {
 		task.wait(0.1);
@@ -37,33 +31,20 @@ export class MovementController implements OnStart, onCharacterAdded {
 	}
 
 	movement(character: ICharacter, role: Roles) {
-		const anims = role === Roles.deer ? DeerAnimations : WendigoAnimations;
+		const anims = role === Roles.deer ? "Deer" : "Wendigo";
 		const humanoid = character.Humanoid;
-		const idle = animate(humanoid, anims.idle);
-		const walk = animate(humanoid, anims.walk);
-		const run = animate(humanoid, anims.run);
 
-		let isWalking = false;
-		let isRunning = false;
 		this.trove.connect(humanoid.Running, (speed) => {
 			if (speed < 1) {
-				idle.Play();
-				walk.Stop();
-				run.Stop();
-				isWalking = false;
-				isRunning = false;
-			} else if (speed < 16 && !isWalking) {
-				walk.Play();
-				idle.Stop();
-				run.Stop();
-				isWalking = true;
-				isRunning = false;
-			} else if (speed > 16 && !isRunning) {
-				run.Play();
-				idle.Stop();
-				walk.Stop();
-				isWalking = false;
-				isRunning = true;
+				this.AnimationController.play("idle" + anims, true);
+			} else if (speed < 16) {
+				if (PlayerState.listHasState(EPlayerState.hungry)) {
+					this.AnimationController.play("run" + anims, true);
+				} else {
+					this.AnimationController.play("walk" + anims, true);
+				}
+			} else if (speed > 20) {
+				this.AnimationController.play("run" + anims, true);
 			}
 		});
 	}
@@ -72,7 +53,6 @@ export class MovementController implements OnStart, onCharacterAdded {
 	}
 	wendigo(character: ICharacter) {
 		character.Humanoid.WalkSpeed = 20;
-		const transform = animate(character.Humanoid, WendigoAnimations.transformation);
-		transform.Play();
+		this.AnimationController.play("transformation");
 	}
 }

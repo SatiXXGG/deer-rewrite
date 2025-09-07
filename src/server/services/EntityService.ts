@@ -1,15 +1,19 @@
 import { Service, OnStart } from "@flamework/core";
 import FastCast, { Caster, FastCastBehavior } from "@rbxts/fastcast";
-import { Workspace } from "@rbxts/services";
+import { ReplicatedStorage, Workspace } from "@rbxts/services";
 import { Events } from "server/network";
-import { ICharacter } from "shared/components/types/Character";
+import { ICharacter, IDeerSkin } from "shared/components/types/Character";
 import { Roles } from "shared/types/RoleTags";
+import { DataService } from "./DataService";
+import getRole from "shared/utils/getRole";
 
 FastCast.VisualizeCasts = true;
 @Service({})
 export class EntityService implements OnStart {
 	private casters = new Map<Player, Caster>();
 	private behaviors = new Map<Player, FastCastBehavior>();
+
+	constructor(private DataService: DataService) {}
 
 	onStart() {
 		Events.gameplay.eat.connect((player, mushroom) => {
@@ -21,6 +25,22 @@ export class EntityService implements OnStart {
 					mushroom.Destroy();
 					player.SetAttribute("Hunger", math.clamp(currentHunger + 1000, 0, 1000));
 					//TODO: ADD SFX
+				}
+			}
+		});
+
+		Events.gameplay.taunt.connect((player) => {
+			const character = player.Character as IDeerSkin | undefined;
+			if (character && getRole(player) === Roles.deer) {
+				const profile = this.DataService.getProfile(player);
+				const currentTaunt = profile.Data.currentTaunt;
+				let taunt = ReplicatedStorage.skins.taunt.FindFirstChild(currentTaunt) as ParticleEmitter | undefined;
+				if (taunt) {
+					taunt = taunt.Clone();
+					//* setup
+					taunt.Parent = character.taunt;
+					//* emission
+					taunt.Emit(25);
 				}
 			}
 		});
