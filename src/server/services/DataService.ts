@@ -24,7 +24,7 @@ interface IPlayerData {
 
 @Service({})
 export class DataService implements OnStart, onPlayerJoined {
-	private DataKey = "PlayerData-(0.0.5)";
+	private DataKey = "PlayerData-(0.0.6)";
 
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
