@@ -1,6 +1,6 @@
 import { Networking } from "@flamework/networking";
 import { EItemClass, GameItem } from "./types/GameItem";
-import { IQuestData } from "./data/Quest";
+import { EQuests, EQuestStatus, IQuestData } from "./data/Quest";
 
 interface ClientToServerEvents {
 	bow: {
@@ -11,6 +11,9 @@ interface ClientToServerEvents {
 		taunt(): void;
 		attack(): void;
 	};
+	quest: {
+		claim(id: number): void;
+	};
 }
 
 interface ServerToClientEvents {
@@ -18,7 +21,7 @@ interface ServerToClientEvents {
 		addItem(item: GameItem): void;
 	};
 	quests: {
-		updateQuest(id: number, current: number): void;
+		updateQuest(id: number, current: number, status: EQuestStatus): void;
 	};
 }
 

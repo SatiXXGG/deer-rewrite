@@ -1,6 +1,10 @@
 import React from "@rbxts/react";
 
-export default function RQuestPrize() {
+interface Props {
+	image: string;
+	amount: number;
+}
+export default function RQuestPrize(props: Props) {
 	return (
 		<frame
 			AnchorPoint={new Vector2(1, 0.5)}
@@ -26,7 +30,7 @@ export default function RQuestPrize() {
 				key={"Txt"}
 				Position={UDim2.fromScale(0.5, 0.960526)}
 				Size={UDim2.fromScale(1, 0.223684)}
-				Text={"100x Cash"}
+				Text={`x${props.amount}`}
 				TextColor3={new Color3(1, 1, 1)}
 				TextScaled={true}
 			>
@@ -47,7 +51,7 @@ export default function RQuestPrize() {
 			<imagelabel
 				AnchorPoint={new Vector2(0.5, 0.5)}
 				BackgroundTransparency={1}
-				Image={"rbxasset://textures/ui/GuiImagePlaceholder.png"}
+				Image={props.image}
 				key={"Icon"}
 				Position={UDim2.fromScale(0.5, 0.394737)}
 				ScaleType={Enum.ScaleType.Fit}

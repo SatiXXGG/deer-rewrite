@@ -24,7 +24,7 @@ interface IPlayerData {
 
 @Service({})
 export class DataService implements OnStart, onPlayerJoined {
-	private DataKey = "PlayerData-(0.0.1)";
+	private DataKey = "PlayerData-(0.0.4)";
 
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
@@ -143,6 +143,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		const has = profile.Data.inventory.some((item) => item.class === itemClass && item.id === id);
 		return has;
 	}
+
 	getCurrentDeer(player: Player) {
 		const profile = this.getProfile(player);
 		return profile.Data.currentDeer;
@@ -169,6 +170,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		const profile = this.getProfile(player);
 		return profile.Data.currentWendigo;
 	}
+
 	give(player: Player, itemClass: EItemClass, id: string) {
 		const hasItem = this.has(player, itemClass, id);
 		if (hasItem) {
@@ -189,6 +191,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		const profile = this.getProfile(player);
 		profile.Data.inventory.push(item);
 	}
+
 	hasCash(player: Player, amount: number) {
 		const profile = this.getProfile(player);
 		return profile.Data.cash >= amount;

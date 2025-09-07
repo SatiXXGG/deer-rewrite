@@ -1,6 +1,6 @@
 import { Service, OnStart } from "@flamework/core";
 import { DataService } from "./DataService";
-import { EQuests, GetQuestData, IQuestData } from "shared/data/Quest";
+import { EQuests, EQuestStatus, GetQuestData, IQuestData } from "shared/data/Quest";
 import { Events, Functions } from "server/network";
 import { onPlayerJoined } from "server/modding/onPlayerJoined/interface";
 
@@ -12,17 +12,43 @@ export class QuestService implements OnStart, onPlayerJoined {
 		Functions.quests.getQuests.setCallback((player) => {
 			return this.getQuests(player);
 		});
+
+		Events.quest.claim.connect((player, id) => {
+			this.claim(player, id);
+		});
 	}
 	giveQuest(player: Player, quest: EQuests) {
 		const info: IQuestData = {
 			id: tick(),
 			current: 0,
 			reference: quest,
+			status: EQuestStatus.Active,
 		};
 
 		const profile = this.DataService.getProfile(player);
 		profile.Data.quests.push(info);
 		return info;
+	}
+
+	claim(player: Player, id: number) {
+		const profile = this.DataService.getProfile(player);
+		const index = profile.Data.quests.findIndex((quest) => quest.id === id);
+		if (index > -1) {
+			const info = profile.Data.quests[index];
+			if (info.status !== EQuestStatus.Completed) return;
+			info.status = EQuestStatus.Claimed;
+			Events.quests.updateQuest.fire(player, info.id, info.current, info.status);
+			//* reward logic
+
+			const data = GetQuestData(info.reference);
+			const [reward, amount] = data.reward;
+
+			switch (reward) {
+				case "cash":
+					this.DataService.addCash(player, amount);
+					break;
+			}
+		}
 	}
 
 	questExpired(player: Player, id: number) {
@@ -32,7 +58,8 @@ export class QuestService implements OnStart, onPlayerJoined {
 			const info = profile.Data.quests[index];
 			const elapsed = tick() - info.id;
 			const data = GetQuestData(info.reference);
-			if (data.expires < elapsed) {
+			print(elapsed / 60, data.expires);
+			if (elapsed / 60 > data.expires) {
 				return true;
 			}
 		}
@@ -50,6 +77,7 @@ export class QuestService implements OnStart, onPlayerJoined {
 
 	getQuests(player: Player) {
 		const profile = this.DataService.getProfile(player);
+		print(profile.Data.quests);
 		return profile.Data.quests;
 	}
 
@@ -59,11 +87,12 @@ export class QuestService implements OnStart, onPlayerJoined {
 		if (index > -1) {
 			const data = GetQuestData(reference);
 			const info = profile.Data.quests[index];
-			if (info.current >= data.max) {
-				warn("Quest is maxed");
+			if (info.current >= data.max && info.status !== EQuestStatus.Completed) {
+				this.finishedQuest(player, info.id);
+				return;
 			}
 			info.current += 1;
-			Events.quests.updateQuest.fire(player, info.id, info.current);
+			Events.quests.updateQuest.fire(player, info.id, info.current, info.status);
 		}
 	}
 
@@ -80,6 +109,17 @@ export class QuestService implements OnStart, onPlayerJoined {
 				});
 				profile.Data.gaveDailyQuests = ct;
 			}
+			player.SetAttribute("gaveDailyQuests", profile.Data.gaveDailyQuests);
 		});
+	}
+
+	finishedQuest(player: Player, id: number) {
+		const profile = this.DataService.getProfile(player);
+		const index = profile.Data.quests.findIndex((quest) => quest.id === id);
+		if (index > -1) {
+			const info = profile.Data.quests[index];
+			info.status = EQuestStatus.Completed;
+			Events.quests.updateQuest.fire(player, info.id, info.current, info.status);
+		}
 	}
 }

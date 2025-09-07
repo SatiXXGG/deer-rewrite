@@ -5,7 +5,6 @@ import RQuestWeekly from "./weekly";
 import RQuestFrame from "./QuestFrame";
 import { GetQuest, IQuest } from "shared/data/Quest";
 import { Events, Functions } from "client/network";
-import { Players } from "@rbxts/services";
 
 interface Props {
 	ref: Ref<ImageLabel>;
@@ -19,7 +18,6 @@ export default function RQuestsUi({ ref }: Props) {
 	useEffect(() => {
 		const daily = quests.filter((q) => q.expires / 60 <= 1);
 		const weekly = quests.filter((q) => q.expires / 60 >= 7);
-
 		setDailyQuests(daily);
 		setWeeklyQuests(weekly);
 	}, [quests]);
@@ -35,14 +33,17 @@ export default function RQuestsUi({ ref }: Props) {
 					if (data) newQuests.push(data);
 				});
 				setQuests(newQuests);
+			})
+			.catch((e) => {
+				error(e);
 			});
 
-		const conn = Events.quests.updateQuest.connect((id, newCurrent) => {
+		const conn = Events.quests.updateQuest.connect((id, newCurrent, status) => {
 			setQuests((prev) => {
 				const copy = [...prev];
 				const index = copy.findIndex((q) => q.id === id);
 				if (index > -1) {
-					copy[index] = { ...copy[index], current: newCurrent };
+					copy[index] = { ...copy[index], current: newCurrent, status };
 				}
 				return copy;
 			});
@@ -79,12 +80,26 @@ export default function RQuestsUi({ ref }: Props) {
 				/>
 				<RQuestDaily>
 					{dailyQuests.map((quest) => (
-						<RQuestFrame key={quest.id} max={quest.max} current={quest.current} title={quest.title} />
+						<RQuestFrame
+							key={quest.id}
+							reference={quest.reference}
+							current={quest.current}
+							title={quest.title}
+							status={quest.status}
+							id={quest.id}
+						/>
 					))}
 				</RQuestDaily>
 				<RQuestWeekly>
 					{weeklyQuests.map((quest) => (
-						<RQuestFrame key={quest.id} max={quest.max} current={quest.current} title={quest.title} />
+						<RQuestFrame
+							key={quest.id}
+							reference={quest.reference}
+							current={quest.current}
+							title={quest.title}
+							status={quest.status}
+							id={quest.id}
+						/>
 					))}
 				</RQuestWeekly>
 			</frame>

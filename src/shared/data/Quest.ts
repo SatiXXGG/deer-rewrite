@@ -6,11 +6,18 @@ export interface IQuestData {
 	id: number;
 	current: number;
 	reference: EQuests;
+	status: EQuestStatus;
+}
+
+export enum EQuestStatus {
+	Active = "active",
+	Completed = "completed",
+	Claimed = "claimed",
 }
 
 export interface IQuestInfo {
 	title: string;
-	reward: { [key: string]: number };
+	reward: [string, number];
 	max: number;
 	expires: number; // time in minutes
 }
@@ -20,7 +27,7 @@ export interface IQuest extends IQuestInfo, IQuestData {}
 export const QuestsData: { [key: string]: IQuestInfo } = {
 	[EQuests.test]: {
 		title: "Click the part",
-		reward: { cash: 100 },
+		reward: ["cash", 2000],
 		max: 10,
 		expires: 60,
 	},
