@@ -19,6 +19,7 @@ export default function RApp() {
 			<Settings></Settings>
 			<Skins></Skins>
 			<Inventory></Inventory>
+
 			<RButtonContainer>
 				<RSectionButton order={1} id="Info" imageId="rbxassetid://108044423266343" />
 				<RSectionButton order={2} id="Inventory" imageId="rbxassetid://132634674535219" />

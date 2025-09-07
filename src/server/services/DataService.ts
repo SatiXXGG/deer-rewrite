@@ -24,7 +24,7 @@ interface IPlayerData {
 
 @Service({})
 export class DataService implements OnStart, onPlayerJoined {
-	private DataKey = "PlayerData-(0.0.4)";
+	private DataKey = "PlayerData-(0.0.5)";
 
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
@@ -32,7 +32,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		currentDeer: EDeerSkins.default,
 		currentWendigo: EWendigoSkins.default,
 		currentTaunt: ETauntSkins.default,
-		cash: 99999,
+		cash: 1000,
 		inventory: [],
 		lastJoin: 0,
 		lastReward: 0,
@@ -127,7 +127,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		print(profile.Data);
 		this.profiles.set(player, profile);
 		player.SetAttribute("loaded", true);
-
+		player.SetAttribute("cash", profile.Data.cash);
 		/** Daily quests */
 		print("gave quests: ", tick() - profile.Data.gaveDailyQuests / 60, " mins ago");
 	}
@@ -200,6 +200,7 @@ export class DataService implements OnStart, onPlayerJoined {
 	addCash(player: Player, amount: number) {
 		const profile = this.getProfile(player);
 		profile.Data.cash += amount;
+		player.SetAttribute("cash", profile.Data.cash);
 	}
 
 	waitForLoad(player: Player) {

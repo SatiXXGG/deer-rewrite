@@ -88,6 +88,7 @@ export class QuestService implements OnStart, onPlayerJoined {
 			const data = GetQuestData(reference);
 			const info = profile.Data.quests[index];
 			if (info.current >= data.max && info.status !== EQuestStatus.Completed) {
+				info.status = EQuestStatus.Completed;
 				this.finishedQuest(player, info.id);
 				return;
 			}
@@ -118,7 +119,6 @@ export class QuestService implements OnStart, onPlayerJoined {
 		const index = profile.Data.quests.findIndex((quest) => quest.id === id);
 		if (index > -1) {
 			const info = profile.Data.quests[index];
-			info.status = EQuestStatus.Completed;
 			Events.quests.updateQuest.fire(player, info.id, info.current, info.status);
 		}
 	}
