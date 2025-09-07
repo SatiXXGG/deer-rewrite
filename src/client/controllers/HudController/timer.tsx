@@ -1,3 +1,4 @@
+import { useMountEffect } from "@rbxts/pretty-react-hooks";
 import React, { useEffect, useState } from "@rbxts/react";
 import { Workspace } from "@rbxts/services";
 
@@ -9,6 +10,11 @@ export default function RTimer() {
 	useEffect(() => {
 		setText(`${phase}: ${left}`);
 	}, [phase, left]);
+
+	useMountEffect(() => {
+		setPhase(Workspace.GetAttribute("phase") as string);
+		setLeft(Workspace.GetAttribute("remaining") as number);
+	});
 
 	Workspace.AttributeChanged.Connect((att) => {
 		if (att === "phase") {
