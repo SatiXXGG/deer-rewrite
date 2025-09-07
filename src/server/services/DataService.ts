@@ -24,7 +24,7 @@ interface IPlayerData {
 
 @Service({})
 export class DataService implements OnStart, onPlayerJoined {
-	private DataKey = "PlayerData-(0.0.0)";
+	private DataKey = "PlayerData-(0.0.1)";
 
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
@@ -117,6 +117,7 @@ export class DataService implements OnStart, onPlayerJoined {
 			},
 		});
 		session.Reconcile();
+
 		return session;
 	}
 
@@ -126,6 +127,9 @@ export class DataService implements OnStart, onPlayerJoined {
 		print(profile.Data);
 		this.profiles.set(player, profile);
 		player.SetAttribute("loaded", true);
+
+		/** Daily quests */
+		print("gave quests: ", tick() - profile.Data.gaveDailyQuests / 60, " mins ago");
 	}
 
 	getProfile(player: Player) {
@@ -133,6 +137,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		assert(profile, `💔 Profile not found for player ${player.Name}`);
 		return profile;
 	}
+
 	has(player: Player, itemClass: EItemClass, id: string) {
 		const profile = this.getProfile(player);
 		const has = profile.Data.inventory.some((item) => item.class === itemClass && item.id === id);

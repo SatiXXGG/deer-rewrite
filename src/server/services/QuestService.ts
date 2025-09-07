@@ -32,7 +32,7 @@ export class QuestService implements OnStart, onPlayerJoined {
 			const info = profile.Data.quests[index];
 			const elapsed = tick() - info.id;
 			const data = GetQuestData(info.reference);
-			if (data.expires < elapsed / 60) {
+			if (data.expires < elapsed) {
 				return true;
 			}
 		}
@@ -41,7 +41,11 @@ export class QuestService implements OnStart, onPlayerJoined {
 
 	cleanExpired(player: Player) {
 		const profile = this.DataService.getProfile(player);
-		profile.Data.quests = profile.Data.quests.filter((quest) => !this.questExpired(player, quest.id));
+		profile.Data.quests = profile.Data.quests.filter((quest) => {
+			const isExpired = this.questExpired(player, quest.id);
+			warn("expired: ", quest.reference, isExpired);
+			return !isExpired;
+		});
 	}
 
 	getQuests(player: Player) {
@@ -74,6 +78,7 @@ export class QuestService implements OnStart, onPlayerJoined {
 				this.daily.forEach((quest) => {
 					this.giveQuest(player, quest);
 				});
+				profile.Data.gaveDailyQuests = ct;
 			}
 		});
 	}
