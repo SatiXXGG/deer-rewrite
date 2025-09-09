@@ -22,7 +22,6 @@ export default function useElapsed(start: number, options?: Options) {
 	});
 	const uuid = useRef(os.time() + math.random(1, 9999));
 	const trove = useRef(new Trove());
-
 	const bindName = useMemo(() => "elapsed_" + tostring(uuid.current), [uuid]);
 
 	useEffect(() => {

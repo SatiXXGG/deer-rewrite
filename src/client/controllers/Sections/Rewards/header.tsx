@@ -5,7 +5,7 @@ import useAttribute from "client/controllers/hooks/useAttribute";
 import useElapsed from "client/controllers/hooks/useElapsed";
 
 export default function RHeaderReward() {
-	const lastClaim = useAttribute(Players.LocalPlayer, "lastReward", 0);
+	const lastClaim = useAttribute(Players.LocalPlayer, "lastClaim", 0);
 	const elapsed = useElapsed(lastClaim ?? 0, { invert: true, maxDays: 1 });
 	const [elapsedText, setElapsedText] = React.useState("");
 
