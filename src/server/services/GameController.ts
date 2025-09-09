@@ -4,7 +4,7 @@ import { Rounds, RoundService } from "./RoundService";
 import { MapService } from "./MapService";
 import { SpawnService } from "./SpawnService";
 import { CollectionService, Players } from "@rbxts/services";
-import { Settings } from "shared/data/Settings";
+import { Settings } from "shared/data/GameSettings";
 import { Roles } from "shared/types/RoleTags";
 
 @Service({})

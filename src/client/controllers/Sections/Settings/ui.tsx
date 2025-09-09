@@ -1,6 +1,8 @@
 import React from "@rbxts/react";
 import RSettingsHeader from "./header";
 import RToggleSetting from "./toggle";
+import Object from "@rbxts/object-utils";
+import { EUserSetting, IUserSettingInfo, TUserSettings } from "shared/data/UserSettings";
 
 export default function RSettingsUi() {
 	return (
@@ -44,7 +46,22 @@ export default function RSettingsUi() {
 						Padding={new UDim(0.0167785, 0)}
 						SortOrder={Enum.SortOrder.LayoutOrder}
 					/>
-					<RToggleSetting title="Noob" desc="Enables noob mode" active={true}></RToggleSetting>
+					<>
+						{Object.entries(TUserSettings).map(([key, value]) => {
+							const setting = key as EUserSetting;
+							const info = value as IUserSettingInfo;
+							const tOf = typeOf(info.value);
+							if (tOf === "boolean") {
+								return (
+									<RToggleSetting
+										title={info.name}
+										desc={info.description}
+										setting={setting}
+									></RToggleSetting>
+								);
+							}
+						})}
+					</>
 				</scrollingframe>
 			</frame>
 

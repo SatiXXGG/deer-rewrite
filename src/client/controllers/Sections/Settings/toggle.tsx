@@ -1,14 +1,16 @@
 import { useSpring } from "@rbxts/pretty-react-hooks";
 import React, { useState } from "@rbxts/react";
+import useSetting from "client/controllers/hooks/useSettings";
+import { EUserSetting } from "shared/data/UserSettings";
 
 interface Props {
-	active: boolean;
+	setting: EUserSetting;
 	title: string;
 	desc: string;
 }
 
 export default function RToggleSetting(props: Props) {
-	const [active, setActive] = useState(props.active);
+	const { value: active, setValue: setActive } = useSetting(props.setting);
 	const [hover, setHover] = useState(false);
 	const [scale, setScale] = useState(1);
 	const toggleEvents: React.InstanceEvent<ImageButton> = {

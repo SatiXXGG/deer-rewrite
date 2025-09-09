@@ -1,6 +1,7 @@
 import { Networking } from "@flamework/networking";
 import { EItemClass, GameItem } from "./types/GameItem";
 import { EQuests, EQuestStatus, IQuestData } from "./data/Quest";
+import { EUserSetting } from "./data/UserSettings";
 
 interface ClientToServerEvents {
 	bow: {
@@ -16,6 +17,9 @@ interface ClientToServerEvents {
 	};
 	rewards: {
 		claim(): void;
+	};
+	settings: {
+		set(setting: EUserSetting, value: boolean | number): void;
 	};
 }
 
@@ -39,6 +43,9 @@ interface ClientToServerFunctions {
 	};
 	quests: {
 		getQuests(): IQuestData[];
+	};
+	settings: {
+		get(setting: EUserSetting): boolean | number;
 	};
 }
 

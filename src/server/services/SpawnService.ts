@@ -11,7 +11,7 @@ import { EQuests } from "shared/data/Quest";
 import { Events } from "server/network";
 import { DataService } from "./DataService";
 import getRole from "shared/utils/getRole";
-import { Settings } from "shared/data/Settings";
+import { Settings } from "shared/data/GameSettings";
 @Service({})
 export class SpawnService implements OnStart {
 	constructor(

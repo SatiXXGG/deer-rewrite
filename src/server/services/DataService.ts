@@ -8,6 +8,7 @@ import { EDeerSkins, ETauntSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } 
 import { Events, Functions } from "server/network";
 import { IQuestData } from "shared/data/Quest";
 import { GameRewards } from "shared/data/Rewards";
+import { EUserSetting } from "shared/data/UserSettings";
 
 interface IPlayerData {
 	cash: number;
@@ -26,6 +27,11 @@ interface IPlayerData {
 	// Quests
 	gaveDailyQuests: number;
 	gaveWeeklyQuests: number;
+
+	// settings
+	settings: {
+		[setting in EUserSetting]: boolean | number;
+	};
 }
 
 @Service({})
@@ -48,6 +54,9 @@ export class DataService implements OnStart, onPlayerJoined {
 
 		gaveDailyQuests: 0,
 		gaveWeeklyQuests: 0,
+		settings: {
+			[EUserSetting.Shadows]: false,
+		},
 	};
 
 	private Store = ProfileStore.New(this.DataKey, this.template);
@@ -142,6 +151,16 @@ export class DataService implements OnStart, onPlayerJoined {
 			}
 
 			print("🎁 Claimed reward: ", profile.Data.lastReward);
+		});
+
+		Functions.settings.get.setCallback((player, setting) => {
+			const profile = this.getProfile(player);
+			return profile.Data.settings[setting];
+		});
+
+		Events.settings.set.connect((player, setting, value) => {
+			const profile = this.getProfile(player);
+			profile.Data.settings[setting] = value;
 		});
 	}
 
