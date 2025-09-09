@@ -20,11 +20,10 @@ export default function useElapsed(start: number, options?: Options) {
 		minutes: 0,
 		seconds: 0,
 	});
-
+	const uuid = useRef(os.time() + math.random(1, 9999));
 	const trove = useRef(new Trove());
 
-	// 👈 memoizamos el nombre de bind para no crearlo cada render
-	const bindName = useMemo(() => "elapsed_" + tostring(start), [start]);
+	const bindName = useMemo(() => "elapsed_" + tostring(uuid.current), [uuid]);
 
 	useEffect(() => {
 		trove.current.clean();
@@ -34,10 +33,10 @@ export default function useElapsed(start: number, options?: Options) {
 
 			if (options?.invert && options.maxDays !== undefined) {
 				const maxSeconds = options.maxDays * 86400;
-				const used = math.max(0, math.floor(tick() - start));
+				const used = math.max(0, math.floor(os.time() - start));
 				seconds = math.max(0, maxSeconds - used);
 			} else {
-				seconds = math.max(0, math.floor(tick() - start));
+				seconds = math.max(0, math.floor(os.time() - start));
 			}
 
 			setElapsed({

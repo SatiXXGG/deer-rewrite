@@ -7,6 +7,7 @@ import { ItemService } from "./ItemService";
 import { EDeerSkins, ETauntSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } from "shared/data/Skins";
 import { Events, Functions } from "server/network";
 import { IQuestData } from "shared/data/Quest";
+import { GameRewards } from "shared/data/Rewards";
 
 interface IPlayerData {
 	cash: number;
@@ -16,15 +17,20 @@ interface IPlayerData {
 	currentTaunt: ETauntSkins;
 	quests: IQuestData[];
 	lastJoin: number;
+
+	// Daily rewards
+	lastClaim: number;
 	lastReward: number;
-	currentReward: number;
+	claimedRewards: number[];
+
+	// Quests
 	gaveDailyQuests: number;
 	gaveWeeklyQuests: number;
 }
 
 @Service({})
 export class DataService implements OnStart, onPlayerJoined {
-	private DataKey = "PlayerData-(0.0.6)";
+	private DataKey = "PlayerData-(0.2.1)";
 
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
@@ -35,11 +41,15 @@ export class DataService implements OnStart, onPlayerJoined {
 		cash: 1000,
 		inventory: [],
 		lastJoin: 0,
+
+		lastClaim: 0,
 		lastReward: 0,
-		currentReward: 0,
+		claimedRewards: [],
+
 		gaveDailyQuests: 0,
 		gaveWeeklyQuests: 0,
 	};
+
 	private Store = ProfileStore.New(this.DataKey, this.template);
 
 	constructor(private ItemService: ItemService) {}
@@ -107,6 +117,32 @@ export class DataService implements OnStart, onPlayerJoined {
 			}
 			return false;
 		});
+
+		Events.rewards.claim.connect((player) => {
+			const profile = this.getProfile(player);
+			const current = profile.Data.lastReward;
+			const elapsed = os.time() - profile.Data.lastClaim;
+			if (elapsed > 60 * 60 * 24 * 2 || profile.Data.lastReward > 6) {
+				profile.Data.claimedRewards = [];
+				profile.Data.lastClaim = os.time();
+				profile.Data.lastReward = 0;
+				return;
+			}
+			if (profile.Data.claimedRewards.includes(current)) return;
+			profile.Data.claimedRewards.push(current);
+			this.updateRewardData(player);
+
+			/** prize */
+			const { amount, reward } = GameRewards[current];
+
+			switch (reward) {
+				case "cash":
+					this.addCash(player, amount);
+					break;
+			}
+
+			print("🎁 Claimed reward: ", profile.Data.lastReward);
+		});
 	}
 
 	load(player: Player): Profile<IPlayerData> {
@@ -128,14 +164,49 @@ export class DataService implements OnStart, onPlayerJoined {
 		this.profiles.set(player, profile);
 		player.SetAttribute("loaded", true);
 		player.SetAttribute("cash", profile.Data.cash);
-		/** Daily quests */
-		print("gave quests: ", tick() - profile.Data.gaveDailyQuests / 60, " mins ago");
+
+		player.SetAttribute("lastClaim", profile.Data.lastClaim);
+		player.SetAttribute("lastReward", profile.Data.lastReward);
+
+		const oneDay = 60 * 60 * 24;
+		task.spawn(() => {
+			while (player.IsDescendantOf(Players)) {
+				const elapsed = os.time() - profile.Data.lastClaim;
+				if (elapsed > oneDay * 2 || profile.Data.lastClaim === 0 || profile.Data.lastReward > 6) {
+					profile.Data.lastClaim = os.time();
+					profile.Data.claimedRewards = [];
+					profile.Data.lastReward = 0;
+				}
+				/** calculates if a day has passed */
+
+				if (elapsed > oneDay && profile.Data.claimedRewards.includes(profile.Data.lastReward)) {
+					profile.Data.lastReward++;
+					if (profile.Data.lastReward > 6) {
+						profile.Data.lastClaim = os.time();
+						profile.Data.claimedRewards = [];
+						profile.Data.lastReward = 0;
+					}
+				}
+				this.updateRewardData(player);
+				task.wait(60);
+			}
+			coroutine.yield();
+		});
 	}
 
 	getProfile(player: Player) {
 		const profile = this.profiles.get(player);
 		assert(profile, `💔 Profile not found for player ${player.Name}`);
 		return profile;
+	}
+
+	updateRewardData(player: Player) {
+		const profile = this.getProfile(player);
+		player.SetAttribute("lastClaim", profile.Data.lastClaim);
+		player.SetAttribute("lastReward", profile.Data.lastReward);
+		profile.Data.claimedRewards.forEach((n) => {
+			player.SetAttribute(`reward-${n}`, true);
+		});
 	}
 
 	has(player: Player, itemClass: EItemClass, id: string) {

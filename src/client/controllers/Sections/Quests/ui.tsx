@@ -16,8 +16,8 @@ export default function RQuestsUi({ ref }: Props) {
 	const [weeklyQuests, setWeeklyQuests] = useState<IQuest[]>([]);
 
 	useEffect(() => {
-		const daily = quests.filter((q) => q.expires / 60 <= 1);
-		const weekly = quests.filter((q) => q.expires / 60 >= 7);
+		const daily = quests.filter((q) => q.expires / 60 / 24 <= 1);
+		const weekly = quests.filter((q) => q.expires / 60 / 24 >= 7);
 		setDailyQuests(daily);
 		setWeeklyQuests(weekly);
 	}, [quests]);

@@ -1,6 +1,8 @@
 import React from "@rbxts/react";
 import RMaxReward from "./maxReward";
 import RDayReward from "./day";
+import Rewards from ".";
+import { GameRewards } from "shared/data/Rewards";
 
 export default function RHolderReward() {
 	return (
@@ -41,7 +43,11 @@ export default function RHolderReward() {
 						SortOrder={Enum.SortOrder.LayoutOrder}
 						Wraps={true}
 					/>
-					<RDayReward></RDayReward>
+					{GameRewards.map((info, index) => {
+						if (index === 6) return;
+						const day = math.clamp(index, 0, 6);
+						return <RDayReward day={day}></RDayReward>;
+					})}
 				</frame>
 			</frame>
 		</frame>

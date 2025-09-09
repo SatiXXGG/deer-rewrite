@@ -1,7 +1,18 @@
-import React from "@rbxts/react";
+import React, { useEffect } from "@rbxts/react";
+import { Players } from "@rbxts/services";
 import RCloseButton from "client/controllers/Elements/CloseButton";
+import useAttribute from "client/controllers/hooks/useAttribute";
+import useElapsed from "client/controllers/hooks/useElapsed";
 
 export default function RHeaderReward() {
+	const lastClaim = useAttribute(Players.LocalPlayer, "lastReward", 0);
+	const elapsed = useElapsed(lastClaim ?? 0, { invert: true, maxDays: 1 });
+	const [elapsedText, setElapsedText] = React.useState("");
+
+	useEffect(() => {
+		setElapsedText(elapsed.hours + ":" + elapsed.minutes + ":" + elapsed.seconds);
+	}, [elapsed]);
+
 	return (
 		<frame
 			AnchorPoint={new Vector2(0.5, 0)}
@@ -70,7 +81,7 @@ export default function RHeaderReward() {
 				key={"Txt"}
 				Position={UDim2.fromScale(0.75, 0.5)}
 				Size={UDim2.fromScale(0.278756, 0.797619)}
-				Text={"24:23:17"}
+				Text={elapsedText}
 				TextColor3={new Color3(1, 1, 1)}
 				TextScaled={true}
 			>

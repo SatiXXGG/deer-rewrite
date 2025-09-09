@@ -1,5 +1,6 @@
 export enum EQuests {
-	test = "test",
+	kill10deer = "kill10deer",
+	kill50deer = "kill50deer",
 }
 
 export interface IQuestData {
@@ -25,11 +26,17 @@ export interface IQuestInfo {
 export interface IQuest extends IQuestInfo, IQuestData {}
 
 export const QuestsData: { [key: string]: IQuestInfo } = {
-	[EQuests.test]: {
-		title: "Click the part",
-		reward: ["cash", 2000],
+	[EQuests.kill10deer]: {
+		title: "Kill 10 players",
+		reward: ["cash", 1000],
 		max: 10,
-		expires: 60,
+		expires: 60 * 23,
+	},
+	[EQuests.kill50deer]: {
+		title: "Kill 50 players",
+		reward: ["cash", 10000],
+		max: 50,
+		expires: 60 * 23 * 7,
 	},
 };
 

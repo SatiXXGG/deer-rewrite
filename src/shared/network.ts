@@ -14,6 +14,9 @@ interface ClientToServerEvents {
 	quest: {
 		claim(id: number): void;
 	};
+	rewards: {
+		claim(): void;
+	};
 }
 
 interface ServerToClientEvents {

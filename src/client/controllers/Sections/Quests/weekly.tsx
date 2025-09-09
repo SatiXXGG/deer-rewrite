@@ -1,9 +1,25 @@
-import React, { Element } from "@rbxts/react";
+import React, { Element, useEffect, useState } from "@rbxts/react";
+import { Players } from "@rbxts/services";
+import useAttribute from "client/controllers/hooks/useAttribute";
+import useElapsed from "client/controllers/hooks/useElapsed";
 
 interface Props {
 	children?: Element | Element[];
 }
 export default function RQuestWeekly(props: Props) {
+	const gotDailyQuests = useAttribute<number>(Players.LocalPlayer, "gaveWeeklyQuests", 1);
+	const elapsedSinceDaily = useElapsed(gotDailyQuests ?? 0, {
+		invert: true,
+		maxDays: 7,
+	});
+	const [weeklyTimer, setWeeklyTimer] = useState("Loading...");
+
+	useEffect(() => {
+		setWeeklyTimer(
+			`${elapsedSinceDaily.days}:${elapsedSinceDaily.hours}:${elapsedSinceDaily.minutes}:${elapsedSinceDaily.seconds}`,
+		);
+	}, [elapsedSinceDaily]);
+
 	return (
 		<frame
 			BackgroundColor3={new Color3()}
@@ -34,7 +50,7 @@ export default function RQuestWeekly(props: Props) {
 					key={"Timer"}
 					Position={UDim2.fromScale(1, 0.5)}
 					Size={UDim2.fromScale(0.44522, 1)}
-					Text={"24:23:17"}
+					Text={weeklyTimer}
 					TextColor3={new Color3(1, 1, 1)}
 					TextScaled={true}
 					TextXAlignment={Enum.TextXAlignment.Right}

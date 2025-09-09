@@ -1,6 +1,26 @@
 import React from "@rbxts/react";
+import { Players } from "@rbxts/services";
+import useAttribute from "client/controllers/hooks/useAttribute";
+import { StringIcons } from "shared/data/Icon";
+import { GameRewards } from "shared/data/Rewards";
 
+const player = Players.LocalPlayer;
 export default function RMaxReward() {
+	const day = 6;
+	const lastReward = useAttribute(player, "lastReward", 0) ?? 0;
+	const isInRange = day > lastReward;
+	const isClaimed = player.GetAttribute(`reward-${day}`) === true;
+
+	const info = GameRewards[day]!;
+	const icon = StringIcons[info.reward] ?? "";
+	const color =
+		isInRange === true
+			? Color3.fromRGB(255, 0, 0)
+			: isClaimed
+			? Color3.fromRGB(255, 214, 0)
+			: Color3.fromRGB(255, 255, 255);
+	const text = isInRange === true ? "Locked" : isClaimed ? "Claimed" : "Claim";
+
 	return (
 		<imagelabel
 			BackgroundTransparency={1}
@@ -42,7 +62,7 @@ export default function RMaxReward() {
 					key={"Txt"}
 					Position={UDim2.fromScale(0.5, 0.452492)}
 					Size={UDim2.fromScale(1, 1)}
-					Text={"DAY 7"}
+					Text={"LAST DAY"}
 					TextColor3={new Color3(1, 1, 1)}
 					TextScaled={true}
 				>
@@ -60,7 +80,7 @@ export default function RMaxReward() {
 			<frame
 				AnchorPoint={new Vector2(0.5, 1)}
 				BackgroundTransparency={1}
-				key={"Claim"}
+				key={text}
 				Position={UDim2.fromScale(0.5, 0.952494)}
 				Size={UDim2.fromScale(0.62701, 0.176039)}
 			>
@@ -72,6 +92,7 @@ export default function RMaxReward() {
 					Position={UDim2.fromScale(0.5, 0.5)}
 					ScaleType={Enum.ScaleType.Fit}
 					Size={UDim2.fromScale(1, 1)}
+					ImageColor3={color}
 				>
 					<textlabel
 						AnchorPoint={new Vector2(0.5, 0.5)}
@@ -86,7 +107,7 @@ export default function RMaxReward() {
 						key={"Txt"}
 						Position={UDim2.fromScale(0.5, 0.513889)}
 						Size={UDim2.fromScale(0.926267, 0.675325)}
-						Text={"CLAIM"}
+						Text={text}
 						TextColor3={new Color3(1, 1, 1)}
 						TextScaled={true}
 					>
@@ -103,7 +124,7 @@ export default function RMaxReward() {
 							key={"Txt"}
 							Position={UDim2.fromScale(0.5, 0.458868)}
 							Size={UDim2.fromScale(1, 1)}
-							Text={"CLAIM"}
+							Text={text}
 							TextColor3={new Color3(1, 1, 1)}
 							TextScaled={true}
 						>
@@ -128,7 +149,7 @@ export default function RMaxReward() {
 			<imagelabel
 				AnchorPoint={new Vector2(0.5, 0.5)}
 				BackgroundTransparency={1}
-				Image={"rbxasset://textures/ui/GuiImagePlaceholder.png"}
+				Image={icon}
 				key={"PlaceHolder"}
 				Position={UDim2.fromScale(0.5, 0.5)}
 				ScaleType={Enum.ScaleType.Fit}
@@ -149,7 +170,7 @@ export default function RMaxReward() {
 				key={"Price"}
 				Position={UDim2.fromScale(0.5, 0.187219)}
 				Size={UDim2.fromScale(0.92926, 0.0977995)}
-				Text={"+$50,000"}
+				Text={`+${info.amount}`}
 				TextColor3={new Color3()}
 				TextScaled={true}
 			>

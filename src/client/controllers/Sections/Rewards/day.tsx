@@ -1,11 +1,36 @@
-import React from "@rbxts/react";
+import { useAsyncEffect } from "@rbxts/pretty-react-hooks";
+import React, { useState } from "@rbxts/react";
+import { Players } from "@rbxts/services";
+import useAttribute from "client/controllers/hooks/useAttribute";
+import useDailyRewardStatus from "client/controllers/hooks/useDailyInfo";
+import { Events } from "client/network";
+import { StringIcons } from "shared/data/Icon";
+import { GameRewards } from "shared/data/Rewards";
 
-export default function RDayReward() {
+interface Props {
+	day: number;
+}
+
+export default function RDayReward({ day }: Props) {
+	const player = Players.LocalPlayer;
+	const lastReward = useAttribute(player, "lastReward", 0) ?? 0;
+	const isInRange = day > lastReward;
+	const isClaimed = useAttribute(player, `reward-${day}`, undefined) === true;
+
+	const info = GameRewards[day]!;
+	const icon = StringIcons[info.reward] ?? "";
+	const color =
+		isInRange === true
+			? Color3.fromRGB(255, 0, 0)
+			: isClaimed
+			? Color3.fromRGB(255, 214, 0)
+			: Color3.fromRGB(255, 255, 255);
+	const text = isInRange === true ? "Locked" : isClaimed ? "Claimed" : "Claim";
 	return (
 		<imagelabel
 			BackgroundTransparency={1}
 			Image={"rbxassetid://114348435075941"}
-			key={"Day1"}
+			key={day}
 			ScaleType={Enum.ScaleType.Fit}
 			Size={UDim2.fromScale(0.321928, 1)}
 		>
@@ -23,7 +48,7 @@ export default function RDayReward() {
 				key={"Txt"}
 				Position={UDim2.fromScale(0.511628, 0.0698517)}
 				Size={UDim2.fromScale(0.854651, 0.189055)}
-				Text={"DAY 1"}
+				Text={`Day ${day}`}
 				TextColor3={new Color3(1, 1, 1)}
 				TextScaled={true}
 			>
@@ -43,7 +68,7 @@ export default function RDayReward() {
 					key={"Txt"}
 					Position={UDim2.fromScale(0.5, 0.446839)}
 					Size={UDim2.fromScale(1, 1)}
-					Text={"DAY 1"}
+					Text={`Day ${day}`}
 					TextColor3={new Color3(1, 1, 1)}
 					TextScaled={true}
 				>
@@ -67,7 +92,7 @@ export default function RDayReward() {
 			<imagelabel
 				AnchorPoint={new Vector2(0.5, 0.5)}
 				BackgroundTransparency={1}
-				Image={"rbxasset://textures/ui/GuiImagePlaceholder.png"}
+				Image={icon}
 				key={"PlaceHolder"}
 				Position={UDim2.fromScale(0.5, 0.469849)}
 				ScaleType={Enum.ScaleType.Fit}
@@ -87,9 +112,15 @@ export default function RDayReward() {
 					BackgroundTransparency={1}
 					Image={"rbxassetid://107155245665730"}
 					key={"Button"}
+					ImageColor3={color}
 					Position={UDim2.fromScale(0.5, 0.5)}
 					ScaleType={Enum.ScaleType.Fit}
 					Size={UDim2.fromScale(1, 1)}
+					Event={{
+						Activated: () => {
+							Events.rewards.claim.fire();
+						},
+					}}
 				>
 					<textlabel
 						AnchorPoint={new Vector2(0.5, 0.5)}
@@ -104,7 +135,7 @@ export default function RDayReward() {
 						key={"Txt"}
 						Position={UDim2.fromScale(0.5, 0.513889)}
 						Size={UDim2.fromScale(0.926267, 0.675325)}
-						Text={"CLAIM"}
+						Text={text}
 						TextColor3={new Color3(1, 1, 1)}
 						TextScaled={true}
 					>
@@ -121,7 +152,7 @@ export default function RDayReward() {
 							key={"Txt"}
 							Position={UDim2.fromScale(0.5, 0.458868)}
 							Size={UDim2.fromScale(1, 1)}
-							Text={"CLAIM"}
+							Text={text}
 							TextColor3={new Color3(1, 1, 1)}
 							TextScaled={true}
 						>

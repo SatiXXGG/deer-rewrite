@@ -6,7 +6,9 @@ import { onPlayerJoined } from "server/modding/onPlayerJoined/interface";
 
 @Service({})
 export class QuestService implements OnStart, onPlayerJoined {
-	private daily: EQuests[] = [EQuests.test];
+	private daily: EQuests[] = [EQuests.kill10deer];
+	private weekly: EQuests[] = [EQuests.kill50deer];
+
 	constructor(private DataService: DataService) {}
 	onStart() {
 		Functions.quests.getQuests.setCallback((player) => {
@@ -19,7 +21,7 @@ export class QuestService implements OnStart, onPlayerJoined {
 	}
 	giveQuest(player: Player, quest: EQuests) {
 		const info: IQuestData = {
-			id: tick(),
+			id: os.time(),
 			current: 0,
 			reference: quest,
 			status: EQuestStatus.Active,
@@ -56,7 +58,7 @@ export class QuestService implements OnStart, onPlayerJoined {
 		const index = profile.Data.quests.findIndex((quest) => quest.id === id);
 		if (index > -1) {
 			const info = profile.Data.quests[index];
-			const elapsed = tick() - info.id;
+			const elapsed = os.time() - info.id;
 			const data = GetQuestData(info.reference);
 			print(elapsed / 60, data.expires);
 			if (elapsed / 60 > data.expires) {
@@ -101,7 +103,7 @@ export class QuestService implements OnStart, onPlayerJoined {
 	onJoin(player: Player): void {
 		this.DataService.waitForLoad(player).then(() => {
 			const profile = this.DataService.getProfile(player);
-			const ct = tick();
+			const ct = os.time();
 			this.cleanExpired(player);
 
 			if (profile.Data.gaveDailyQuests === 0 || ct - profile.Data.gaveDailyQuests > 60 * 60 * 24) {
@@ -111,6 +113,16 @@ export class QuestService implements OnStart, onPlayerJoined {
 				});
 				profile.Data.gaveDailyQuests = ct;
 			}
+
+			if (profile.Data.gaveWeeklyQuests === 0 || ct - profile.Data.gaveWeeklyQuests > 60 * 60 * 24 * 7) {
+				print("🌦️ Gave weekly quests");
+				this.weekly.forEach((quest) => {
+					this.giveQuest(player, quest);
+				});
+				profile.Data.gaveWeeklyQuests = ct;
+			}
+
+			player.SetAttribute("gaveWeeklyQuests", profile.Data.gaveWeeklyQuests);
 			player.SetAttribute("gaveDailyQuests", profile.Data.gaveDailyQuests);
 		});
 	}

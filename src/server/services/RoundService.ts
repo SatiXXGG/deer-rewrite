@@ -52,7 +52,7 @@ type ChangeCallback = (round: Rounds) => void;
 @Service({})
 export class RoundService implements OnStart {
 	private current: Rounds = Rounds.Intermission;
-	private lastChange: number = tick();
+	private lastChange: number = os.time();
 	private roundChange = new Set<ChangeCallback>();
 	private gamingRounds = [Rounds.Hide, Rounds.Survive, Rounds.OnRound];
 	getNext() {
@@ -72,7 +72,7 @@ export class RoundService implements OnStart {
 		} else {
 			this.current = Next;
 		}
-		this.lastChange = tick();
+		this.lastChange = os.time();
 		this.updateRound();
 	}
 
@@ -86,7 +86,7 @@ export class RoundService implements OnStart {
 	}
 
 	updateTime() {
-		const elapsed = tick() - this.lastChange;
+		const elapsed = os.time() - this.lastChange;
 		const info = RoundsInfo[this.current];
 		if (!info) {
 			error("Invalid round info: " + this.current);
@@ -100,14 +100,14 @@ export class RoundService implements OnStart {
 			while (game) {
 				const info = RoundsInfo[this.current];
 
-				if (tick() - this.lastChange > info.duration) {
+				if (os.time() - this.lastChange > info.duration) {
 					const Next = this.getNext();
 					if (!Next) {
 						this.reset();
 					} else {
 						this.current = Next;
 					}
-					this.lastChange = tick();
+					this.lastChange = os.time();
 					this.updateRound();
 				}
 				this.updateTime();

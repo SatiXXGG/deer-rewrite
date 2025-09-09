@@ -20,20 +20,6 @@ export class SpawnService implements OnStart {
 		private QuestService: QuestService,
 	) {}
 	onStart() {
-		Make("Part", {
-			Parent: Workspace,
-			Name: "test",
-			Anchored: true,
-			Position: new Vector3(0, 5, 0),
-			Children: [
-				Make("ClickDetector", {
-					MouseClick: (player: Player) => {
-						this.QuestService.incrementQuests(player, EQuests.test);
-					},
-				}),
-			],
-		});
-
 		Events.gameplay.attack.connect((player) => {
 			const character = player.Character as ICharacter | undefined;
 			if (getRole(player) === Roles.wendigo && character) {
