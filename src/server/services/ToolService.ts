@@ -1,6 +1,18 @@
 import { Service, OnStart } from "@flamework/core";
 import { EntityService } from "./EntityService";
 import { Events } from "server/network";
+import { GetInfoByClass, IBowInfo } from "shared/data/Skins";
+import { EItemClass } from "shared/types/GameItem";
+
+interface IToolInstance extends Tool {
+	Handle: BasePart;
+}
+
+interface IBowInstance extends IToolInstance {
+	Handle: BasePart & {
+		firePos: Attachment;
+	};
+}
 
 @Service({})
 export class ToolService implements OnStart {
@@ -8,17 +20,23 @@ export class ToolService implements OnStart {
 	onStart() {
 		Events.bow.shot.connect((player, hit) => {
 			if (player.Character) {
-				let bow: Tool | undefined;
-				player.Character.GetChildren().forEach((child) => {
-					if (child.IsA("Tool") && child.GetAttribute("class") === "bow") {
-						const origin = child.GetPivot().Position;
-						this.shot(player, origin, hit);
-					}
-				});
+				const tool = this.getTool<IBowInstance>(player, "bow");
+				if (tool) {
+					const info = GetInfoByClass<IBowInfo>(EItemClass.bow, tool.Name);
+					assert(info, "No info for bow: " + tool.Name);
+					const origin = tool.Handle.firePos.WorldPosition;
+					this.EntityService.arrow(player, hit, origin, info);
+				}
 			}
 		});
 	}
-	shot(player: Player, origin: Vector3, hit: Vector3) {
-		this.EntityService.arrow(player, hit, origin);
+
+	getTool<T extends IToolInstance>(player: Player, Class: string) {
+		const found = player.Character!.GetChildren().find((instance) => {
+			if (instance.IsA("Tool") && instance.GetAttribute("class") === Class) {
+				return true;
+			}
+		}) as T | undefined;
+		return found;
 	}
 }

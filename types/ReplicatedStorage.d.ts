@@ -8,5 +8,6 @@ interface ReplicatedStorage extends Instance {
 		};
 		bow: Folder;
 		taunt: Folder;
+		arrow: Folder;
 	};
 }

@@ -6,13 +6,16 @@ import { ICharacter, IDeerSkin } from "shared/components/types/Character";
 import { Roles } from "shared/types/RoleTags";
 import { DataService } from "./DataService";
 import getRole from "shared/utils/getRole";
+import { isPlayer } from "shared/utils/isPlayer";
+import Make from "@rbxts/make";
+import { EArrowType, IBowInfo } from "shared/data/Skins";
 
-FastCast.VisualizeCasts = true;
 @Service({})
 export class EntityService implements OnStart {
-	private casters = new Map<Player, Caster>();
-	private behaviors = new Map<Player, FastCastBehavior>();
-
+	private arrowsContainer = Make("Folder", {
+		Name: "Arrows container",
+		Parent: Workspace,
+	});
 	constructor(private DataService: DataService) {}
 
 	onStart() {
@@ -47,23 +50,35 @@ export class EntityService implements OnStart {
 			}
 		});
 	}
-	arrow(player: Player, hit: Vector3, origin: Vector3) {
-		if (player.Character!) return;
-		let caster = this.casters.get(player);
-		if (!caster) {
-			const params = new RaycastParams();
-			params.FilterDescendantsInstances = [player.Character!];
-			const info = FastCast.newBehavior();
-			info.RaycastParams = params;
-			info.Acceleration = new Vector3(0, -Workspace.Gravity, 0);
-			info.AutoIgnoreContainer = false;
+	arrow(player: Player, hit: Vector3, origin: Vector3, bowInfo: IBowInfo) {
+		if (!player.Character) return;
+		const arrowType = bowInfo.arrow;
+		const force = bowInfo.force;
+		const arrowModel = ReplicatedStorage.skins.arrow.FindFirstChild(arrowType) as Model | undefined;
+		const caster = new FastCast();
+		const params = new RaycastParams();
+		const info = FastCast.newBehavior();
+		assert(arrowModel, "No arrow model of id: " + arrowType);
+		params.FilterDescendantsInstances = [player.Character!];
+		info.RaycastParams = params;
+		info.Acceleration = new Vector3(0, -Workspace.Gravity, 0);
+		info.AutoIgnoreContainer = false;
+		info.CosmeticBulletContainer = this.arrowsContainer;
+		info.CosmeticBulletTemplate = arrowModel;
 
-			const newCaster = new FastCast();
-			this.casters.set(player, newCaster);
-			caster = newCaster;
-			this.behaviors.set(player, info);
-		}
-		const info = this.behaviors.get(player)!;
-		caster.Fire(origin, hit, 10, info);
+		caster.LengthChanged.Connect((activeCast, last, dir, displacement, segmentVelocity, cosmeticBullet) => {
+			const newPos = last.add(dir.mul(displacement));
+			(cosmeticBullet as BasePart).CFrame = CFrame.lookAt(last, newPos);
+		});
+
+		caster.RayHit.Connect((_, ray) => {
+			const hit = ray.Instance;
+			const character = isPlayer(hit, Roles.deer);
+			if (character) {
+				character.Humanoid.TakeDamage(100000);
+			}
+		});
+
+		caster.Fire(origin, hit, force, info);
 	}
 }

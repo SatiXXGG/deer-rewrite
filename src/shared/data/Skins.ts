@@ -21,10 +21,24 @@ export enum EWendigoSkins {
 	red = "red",
 }
 
+export enum EBowSkins {
+	default = "default",
+	toy = "toy",
+}
+export enum EArrowType {
+	default = "default",
+	toy = "toy",
+}
+
 export interface IBuyableInfo extends GameItem {
 	price: number;
 	display: string;
 	startWith?: boolean;
+}
+
+export interface IBowInfo extends IBuyableInfo {
+	arrow: EArrowType;
+	force: number;
 }
 
 export const DeerSkinsInfo: Record<EDeerSkins, IBuyableInfo> = {
@@ -112,6 +126,28 @@ export const TauntSkinsInfo: Record<ETauntSkins, IBuyableInfo> = {
 	},
 };
 
+export const BowSkinsInfo: Record<EBowSkins, IBowInfo> = {
+	[EBowSkins.default]: {
+		id: EBowSkins.default,
+		class: EItemClass.bow,
+		startWith: true,
+		price: 0,
+		display: "Default",
+		arrow: EArrowType.default,
+		force: 500,
+	},
+
+	[EBowSkins.toy]: {
+		id: EBowSkins.toy,
+		class: EItemClass.bow,
+		startWith: false,
+		price: 0,
+		display: "Toy",
+		arrow: EArrowType.toy,
+		force: 500,
+	},
+};
+
 export const Containers: Record<EItemClass, Folder> = {
 	[EItemClass.deer]: ReplicatedStorage.skins.deer,
 	[EItemClass.wendigo]: ReplicatedStorage.skins.wendigo,
@@ -122,10 +158,10 @@ export const Containers: Record<EItemClass, Folder> = {
 export const ClassInfo: Record<EItemClass, { [id: string]: IBuyableInfo }> = {
 	[EItemClass.deer]: DeerSkinsInfo,
 	[EItemClass.wendigo]: WendigoSkinsInfo,
-	[EItemClass.bow]: {},
+	[EItemClass.bow]: BowSkinsInfo,
 	[EItemClass.taunt]: {},
 };
 
-export function GetInfoByClass(Class: EItemClass, id: string) {
-	return ClassInfo[Class][id];
+export function GetInfoByClass<T extends IBuyableInfo>(Class: EItemClass, id: string) {
+	return ClassInfo[Class][id] as T;
 }
