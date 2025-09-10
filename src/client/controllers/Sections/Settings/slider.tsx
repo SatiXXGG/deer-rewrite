@@ -1,6 +1,29 @@
-import React from "@rbxts/react";
+import React, { useEffect, useRef, useState } from "@rbxts/react";
+import useSetting from "client/controllers/hooks/useSettings";
+import { EUserSetting, TUserSettings } from "shared/data/UserSettings";
 
-export default function RSliderSetting() {
+interface Props {
+	setting: EUserSetting;
+	title: string;
+	desc: string;
+}
+
+export default function RSliderSetting(props: Props) {
+	const { setValue, value } = useSetting(props.setting);
+	const [percentage, setPercentage] = useState(0.5);
+	const info = TUserSettings[props.setting];
+	const max = info.max!;
+	const min = info.min!;
+	const containerRef = useRef<Frame>();
+	const draggerRef = useRef<ImageButton>();
+	const dragging = useRef(false);
+
+	useEffect(() => {
+		if (!dragging.current) {
+			const c = value;
+			setPercentage((value as number) / max);
+		}
+	}, [value]);
 	return (
 		<imagelabel
 			BackgroundTransparency={1}
@@ -41,7 +64,7 @@ export default function RSliderSetting() {
 					key={"Txt"}
 					Position={UDim2.fromScale(0.0847154, 0.5)}
 					Size={UDim2.fromScale(0.169329, 1)}
-					Text={"FOV"}
+					Text={props.title}
 					TextColor3={new Color3(1, 1, 1)}
 					TextScaled={true}
 					TextXAlignment={Enum.TextXAlignment.Left}
@@ -59,7 +82,7 @@ export default function RSliderSetting() {
 						key={"Txt"}
 						Position={UDim2.fromScale(0.5, 0.45)}
 						Size={UDim2.fromScale(1, 1)}
-						Text={"FOV"}
+						Text={props.title}
 						TextColor3={new Color3(1, 1, 1)}
 						TextScaled={true}
 						TextXAlignment={Enum.TextXAlignment.Left}
@@ -96,7 +119,7 @@ export default function RSliderSetting() {
 					key={"Description"}
 					Position={UDim2.fromScale(0.604475, 0.5)}
 					Size={UDim2.fromScale(0.773163, 0.709091)}
-					Text={"Insert setting desc here"}
+					Text={props.desc}
 					TextColor3={new Color3(1, 1, 1)}
 					TextScaled={true}
 					TextXAlignment={Enum.TextXAlignment.Left}
@@ -114,7 +137,7 @@ export default function RSliderSetting() {
 						key={"Txt"}
 						Position={UDim2.fromScale(0.5, 0.45)}
 						Size={UDim2.fromScale(1, 1)}
-						Text={"Insert setting desc here"}
+						Text={props.desc}
 						TextColor3={new Color3(1, 1, 1)}
 						TextScaled={true}
 						TextXAlignment={Enum.TextXAlignment.Left}
@@ -155,6 +178,7 @@ export default function RSliderSetting() {
 				key={"Bar"}
 				Position={UDim2.fromScale(0.0257576, 0.816993)}
 				Size={UDim2.fromScale(0.815152, 0.228758)}
+				ref={containerRef}
 			>
 				<uicorner key={"UICorner"} CornerRadius={new UDim(1, 0)} />
 
@@ -163,11 +187,32 @@ export default function RSliderSetting() {
 					BackgroundTransparency={1}
 					Image={"rbxassetid://95265795654179"}
 					key={"Indicator"}
-					Position={UDim2.fromScale(0.5, 0.5)}
+					Position={UDim2.fromScale(percentage, 0.5)}
 					ScaleType={Enum.ScaleType.Fit}
 					Size={UDim2.fromScale(0.0966543, 1.48571)}
+					ref={draggerRef}
 				>
 					<uicorner key={"UICorner"} CornerRadius={new UDim(1, 0)} />
+					<uidragdetector
+						Event={{
+							DragContinue: () => {
+								if (draggerRef.current) {
+									const current = math.floor(draggerRef.current.Position.X.Scale * 100) / 100;
+									setValue(math.clamp(math.round(min + current * (max - min)), min!, max));
+								}
+							},
+							DragStart: () => {
+								dragging.current = true;
+							},
+							DragEnd: () => {
+								dragging.current = false;
+							},
+						}}
+						ResponseStyle={Enum.UIDragDetectorResponseStyle.Scale}
+						DragStyle={Enum.UIDragDetectorDragStyle.TranslateLine}
+						BoundingUI={containerRef}
+						ReferenceUIInstance={containerRef}
+					></uidragdetector>
 				</imagebutton>
 			</frame>
 
@@ -184,7 +229,7 @@ export default function RSliderSetting() {
 				key={"Txt"}
 				Position={UDim2.fromScale(0.978788, 0.895425)}
 				Size={UDim2.fromScale(0.133333, 0.379085)}
-				Text={"75"}
+				Text={tostring(value! as number)}
 				TextColor3={new Color3(1, 1, 1)}
 				TextScaled={true}
 			>
@@ -201,7 +246,7 @@ export default function RSliderSetting() {
 					key={"Txt"}
 					Position={UDim2.fromScale(0.517045, 0.45)}
 					Size={UDim2.fromScale(1.01136, 1)}
-					Text={"75"}
+					Text={tostring(value! as number)}
 					TextColor3={new Color3(1, 1, 1)}
 					TextScaled={true}
 				/>

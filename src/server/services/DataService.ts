@@ -56,6 +56,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		gaveWeeklyQuests: 0,
 		settings: {
 			[EUserSetting.Shadows]: false,
+			[EUserSetting.Fov]: 75,
 		},
 	};
 

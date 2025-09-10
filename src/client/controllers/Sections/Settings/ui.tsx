@@ -3,6 +3,7 @@ import RSettingsHeader from "./header";
 import RToggleSetting from "./toggle";
 import Object from "@rbxts/object-utils";
 import { EUserSetting, IUserSettingInfo, TUserSettings } from "shared/data/UserSettings";
+import RSliderSetting from "./slider";
 
 export default function RSettingsUi() {
 	return (
@@ -58,6 +59,14 @@ export default function RSettingsUi() {
 										desc={info.description}
 										setting={setting}
 									></RToggleSetting>
+								);
+							} else if (tOf === "number") {
+								return (
+									<RSliderSetting
+										setting={setting}
+										title={info.name}
+										desc={info.description}
+									></RSliderSetting>
 								);
 							}
 						})}

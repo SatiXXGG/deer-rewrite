@@ -3,6 +3,7 @@ import { Workspace } from "@rbxts/services";
 
 export enum EUserSetting {
 	Shadows = "Shadows",
+	Fov = "Fov",
 }
 
 export interface IUserSettingInfo {
@@ -25,6 +26,17 @@ export const TUserSettings: Record<EUserSetting, IUserSettingInfo> = {
 					child.CastShadow = current as boolean;
 				}
 			});
+		},
+	},
+	[EUserSetting.Fov]: {
+		name: "Fov",
+		description: "Changes the camera FOV",
+		value: 75,
+		min: 75,
+		max: 100,
+		action: (current) => {
+			const cc = Workspace.CurrentCamera;
+			cc!.FieldOfView = current as number;
 		},
 	},
 };
