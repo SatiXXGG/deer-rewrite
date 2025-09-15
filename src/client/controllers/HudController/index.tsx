@@ -1,5 +1,5 @@
 import { Controller, OnStart } from "@flamework/core";
-import { Players } from "@rbxts/services";
+import { CollectionService, Players } from "@rbxts/services";
 import React from "@rbxts/react";
 import { createRoot } from "@rbxts/react-roblox";
 import RApp from "./app";
@@ -11,16 +11,31 @@ import { Roles } from "shared/types/RoleTags";
 import RTransition from "../Elements/Transition";
 import RDeerUi from "./RoleUi/deer";
 import RWendigoUi from "./RoleUi/wendigo";
+import RHunterUi from "./RoleUi/hunter";
 @Controller({})
 export class HudController implements OnStart, onCharacterAdded {
-	onStart() {}
+	private player = Players.LocalPlayer;
+	private playerGui = this.player.WaitForChild("PlayerGui") as PlayerGui;
+	private root = createRoot(this.playerGui);
+
+	onStart() {
+		CollectionService.TagAdded.Connect((tag) => {
+			if (getRole(this.player) === tag) {
+				this.root.render(
+					<screengui ZIndexBehavior={"Sibling"} IgnoreGuiInset={true} ResetOnSpawn={true}>
+						<RTimer></RTimer>
+						<RHunterUi></RHunterUi>
+					</screengui>,
+				);
+			}
+		});
+	}
 
 	onCharacterAdded(character: ICharacter): void {
 		const player = Players.LocalPlayer;
 		if (!player) return; // Por seguridad
 
-		const playerGui = player.WaitForChild("PlayerGui") as PlayerGui;
-		const root = createRoot(playerGui);
+		const root = this.root;
 		const role = getRole(player);
 		if (role === Roles.none) {
 			root.render(
@@ -42,6 +57,13 @@ export class HudController implements OnStart, onCharacterAdded {
 				<screengui ZIndexBehavior={"Sibling"} IgnoreGuiInset={true} ResetOnSpawn={true}>
 					<RTimer></RTimer>
 					<RWendigoUi></RWendigoUi>
+				</screengui>,
+			);
+		} else if (role === Roles.hunter) {
+			root.render(
+				<screengui ZIndexBehavior={"Sibling"} IgnoreGuiInset={true} ResetOnSpawn={true}>
+					<RTimer></RTimer>
+					<RHunterUi></RHunterUi>
 				</screengui>,
 			);
 		}

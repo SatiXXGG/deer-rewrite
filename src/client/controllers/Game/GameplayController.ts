@@ -12,6 +12,7 @@ import { EPlayerState, PlayerState } from "../data/State";
 import { AnimationController } from "./AnimationController";
 import { DeerAnimations, WendigoAnimations } from "shared/data/Animations";
 import getRole from "shared/utils/getRole";
+import CameraShaker, { CameraShakeInstance } from "@rbxts/camera-shaker";
 
 @Controller({ loadOrder: 2 })
 export class GameplayController implements OnStart, onCharacterAdded {
@@ -45,6 +46,11 @@ export class GameplayController implements OnStart, onCharacterAdded {
 			Gamepad: Enum.KeyCode.ButtonR2,
 		});
 
+		this.GameplayContext.Add("trap", {
+			KeyboardAndMouse: Enum.KeyCode.F,
+			Gamepad: Enum.KeyCode.ButtonR2,
+		});
+
 		this.GameplayContext.Assign();
 		InputActionsInitializationHelper.InitAll();
 
@@ -54,6 +60,7 @@ export class GameplayController implements OnStart, onCharacterAdded {
 		this.AnimationController.create(DeerAnimations.run, "runDeer");
 		this.AnimationController.create(DeerAnimations.idle, "idleDeer");
 		this.AnimationController.create(DeerAnimations.walk, "walkDeer");
+		this.AnimationController.create("rbxassetid://102839069728355", "deerTrapHit");
 		/** Animations wendigo */
 		this.AnimationController.create(WendigoAnimations.run, "runWendigo");
 		this.AnimationController.create(WendigoAnimations.idle, "idleWendigo");
@@ -63,11 +70,26 @@ export class GameplayController implements OnStart, onCharacterAdded {
 		this.AnimationController.create(WendigoAnimations.attackL, "attackL");
 		this.AnimationController.create(WendigoAnimations.attackR, "attackR");
 
+		const shaker = new CameraShaker(Enum.RenderPriority.Camera.Value, (cf) => {
+			Workspace.CurrentCamera!.CFrame = Workspace.CurrentCamera!.CFrame.mul(cf);
+		});
+
+		shaker.Start();
 		/** States */
 
 		PlayerState.onAdd((state) => {
 			if (state === EPlayerState.hungry || state === EPlayerState.stunned) {
 				ActionsController.Release("run");
+				//* vfx
+				if (state === EPlayerState.stunned) {
+					shaker.ShakeOnce(2, 1, 0, 0.3);
+				}
+			}
+		});
+
+		CollectionService.GetInstanceAddedSignal(Roles.hunter).Connect((instance) => {
+			if (instance === this.player) {
+				this.hunter((instance as Player).Character as ICharacter);
 			}
 		});
 	}
@@ -195,7 +217,6 @@ export class GameplayController implements OnStart, onCharacterAdded {
 			}
 		});
 	}
-
 	wendigo(character: ICharacter) {
 		let left = false;
 		this.trove.bindToRenderStep("controls", Enum.RenderPriority.Input.Value, () => {
@@ -218,6 +239,19 @@ export class GameplayController implements OnStart, onCharacterAdded {
 			}
 		});
 	}
+
+	hunter(character: ICharacter) {
+		this.trove.bindToRenderStep("controls", Enum.RenderPriority.Input.Value, (dt) => {
+			if (ActionsController.IsJustPressed("trap") && !PlayerState.listHasState(EPlayerState.placingTrap)) {
+				Events.gameplay.trap.fire();
+				PlayerState.add(EPlayerState.placingTrap, math.huge);
+				task.delay(5, () => {
+					PlayerState.remove(EPlayerState.placingTrap);
+				});
+			}
+		});
+	}
+
 	attack() {
 		PlayerState.add(EPlayerState.attacking, math.huge);
 		Events.gameplay.attack.fire();

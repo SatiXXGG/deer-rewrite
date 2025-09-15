@@ -4,7 +4,7 @@ import { Players } from "@rbxts/services";
 import { onPlayerJoined } from "server/modding/onPlayerJoined/interface";
 import { EItemClass, GameItem } from "shared/types/GameItem";
 import { ItemService } from "./ItemService";
-import { EDeerSkins, ETauntSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } from "shared/data/Skins";
+import { EBowSkins, EDeerSkins, ETauntSkins, EWendigoSkins, GetInfoByClass, IBuyableInfo } from "shared/data/Skins";
 import { Events, Functions } from "server/network";
 import { IQuestData } from "shared/data/Quest";
 import { GameRewards } from "shared/data/Rewards";
@@ -16,6 +16,7 @@ interface IPlayerData {
 	currentDeer: EDeerSkins;
 	currentWendigo: EWendigoSkins;
 	currentTaunt: ETauntSkins;
+	currentBow: EBowSkins;
 	quests: IQuestData[];
 	lastJoin: number;
 
@@ -36,7 +37,7 @@ interface IPlayerData {
 
 @Service({})
 export class DataService implements OnStart, onPlayerJoined {
-	private DataKey = "PlayerData-(0.2.1)";
+	private DataKey = "PlayerData-(0.2.2)";
 
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
@@ -44,6 +45,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		currentDeer: EDeerSkins.default,
 		currentWendigo: EWendigoSkins.default,
 		currentTaunt: ETauntSkins.default,
+		currentBow: EBowSkins.default,
 		cash: 1000,
 		inventory: [],
 		lastJoin: 0,

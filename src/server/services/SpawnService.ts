@@ -18,6 +18,7 @@ export class SpawnService implements OnStart {
 		private MapService: MapService,
 		private AvatarService: AvatarService,
 		private QuestService: QuestService,
+		private DataService: DataService,
 	) {}
 	onStart() {
 		Events.gameplay.attack.connect((player) => {
@@ -110,6 +111,17 @@ export class SpawnService implements OnStart {
 			print("🏹 Hunter spawned");
 			character.HumanoidRootPart.CFrame = spawn.CFrame;
 			this.autoRemoveTags(player, Roles.hunter);
+			player.SetAttribute("traps", 3);
+			/** bow */
+			const profile = this.DataService.getProfile(player);
+
+			if (profile) {
+				const skin = ReplicatedStorage.skins.bow.FindFirstChild(profile.Data.currentBow);
+				if (skin !== undefined) {
+					const bow = skin.Clone();
+					bow.Parent = player.Backpack;
+				}
+			}
 		}
 	}
 

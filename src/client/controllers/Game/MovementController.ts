@@ -1,6 +1,6 @@
 import { Controller, OnStart } from "@flamework/core";
 import Make from "@rbxts/make";
-import { Players } from "@rbxts/services";
+import { Players, RunService } from "@rbxts/services";
 import { Trove } from "@rbxts/trove";
 import { onCharacterAdded } from "client/modding/onCharacterAdded/interface";
 import { ICharacter } from "shared/components/types/Character";
@@ -9,6 +9,7 @@ import { Roles } from "shared/types/RoleTags";
 import getRole from "shared/utils/getRole";
 import { AnimationController } from "./AnimationController";
 import { EPlayerState, PlayerState } from "../data/State";
+import { Events } from "client/network";
 
 @Controller({})
 export class MovementController implements OnStart, onCharacterAdded {
@@ -19,7 +20,16 @@ export class MovementController implements OnStart, onCharacterAdded {
 		[Roles.wendigo]: (character: ICharacter) => this.wendigo(character),
 	};
 	constructor(private AnimationController: AnimationController) {}
-	onStart() {}
+	onStart() {
+		Events.trap.set.connect(() => {
+			if (!PlayerState.listHasState(EPlayerState.stunned)) {
+				PlayerState.add(EPlayerState.stunned, math.huge);
+				task.delay(5, () => {
+					PlayerState.remove(EPlayerState.stunned);
+				});
+			}
+		});
+	}
 	onCharacterAdded(character: ICharacter): void {
 		task.wait(0.1);
 		this.trove.clean();
@@ -47,6 +57,27 @@ export class MovementController implements OnStart, onCharacterAdded {
 				this.AnimationController.play("run" + anims, true);
 			}
 		});
+
+		//* testing purposes
+		if (RunService.IsStudio() || role === Roles.deer) {
+			const c1 = PlayerState.onAdd((added) => {
+				if (added === EPlayerState.stunned) {
+					humanoid.WalkSpeed = 3;
+					this.AnimationController.play("deerTrapHit", false);
+				}
+			});
+
+			const c2 = PlayerState.onRemove((removed) => {
+				if (removed === EPlayerState.stunned) {
+					humanoid.WalkSpeed = 8;
+				}
+			});
+
+			this.trove.add(() => {
+				c1.clear();
+				c2.clear();
+			});
+		}
 	}
 	deer(character: ICharacter) {
 		character.Humanoid.WalkSpeed = 8;

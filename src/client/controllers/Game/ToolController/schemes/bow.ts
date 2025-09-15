@@ -19,6 +19,8 @@ export const TsBow = {
 				Events.bow.shot(mouse.Hit.Position);
 			}
 		});
+
+		/** arrows */
 	},
 	tool: undefined,
 } satisfies IToolScheme & { isEquipped: boolean };

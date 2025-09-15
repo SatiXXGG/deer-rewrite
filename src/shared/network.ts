@@ -2,6 +2,7 @@ import { Networking } from "@flamework/networking";
 import { EItemClass, GameItem } from "./types/GameItem";
 import { EQuests, EQuestStatus, IQuestData } from "./data/Quest";
 import { EUserSetting } from "./data/UserSettings";
+import { NetworkUnreliable } from "@flamework/networking/out/types";
 
 interface ClientToServerEvents {
 	bow: {
@@ -11,7 +12,9 @@ interface ClientToServerEvents {
 		eat(mushroom: Model): void;
 		taunt(): void;
 		attack(): void;
+		trap(): void;
 	};
+
 	quest: {
 		claim(id: number): void;
 	};
@@ -29,6 +32,9 @@ interface ServerToClientEvents {
 	};
 	quests: {
 		updateQuest(id: number, current: number, status: EQuestStatus): void;
+	};
+	trap: {
+		set: NetworkUnreliable<() => void>;
 	};
 }
 

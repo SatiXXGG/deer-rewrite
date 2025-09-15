@@ -12,23 +12,7 @@ export const schemeMap: { [key: string]: IToolScheme } = {
 @Controller({})
 export class ToolsController implements OnStart, onCharacterAdded {
 	private player = Players.LocalPlayer;
-	onStart() {
-		task.wait(1); //* wait for backpack
-		this.player.Backpack.GetChildren().forEach((tool) => {
-			// eslint-disable-next-line roblox-ts/lua-truthiness
-			if (tool.IsA("Tool") && !tool.GetAttribute("setup")) {
-				this.onAdded(tool);
-				tool.SetAttribute("setup", true);
-			}
-		});
-		this.player.Backpack.ChildAdded.Connect((tool) => {
-			// eslint-disable-next-line roblox-ts/lua-truthiness
-			if (tool.IsA("Tool") && !tool.GetAttribute("setup")) {
-				this.onAdded(tool);
-				tool.SetAttribute("setup", true);
-			}
-		});
-	}
+	onStart() {}
 	/**
 	 * Bind tool functions
 	 * @param tool
@@ -44,6 +28,22 @@ export class ToolsController implements OnStart, onCharacterAdded {
 	}
 	onCharacterAdded(character: ICharacter): void {
 		character.ChildAdded.Connect((tool) => {
+			// eslint-disable-next-line roblox-ts/lua-truthiness
+			if (tool.IsA("Tool") && !tool.GetAttribute("setup")) {
+				this.onAdded(tool);
+				tool.SetAttribute("setup", true);
+			}
+		});
+
+		task.wait(1); //* wait for backpack
+		this.player.Backpack.GetChildren().forEach((tool) => {
+			// eslint-disable-next-line roblox-ts/lua-truthiness
+			if (tool.IsA("Tool") && !tool.GetAttribute("setup")) {
+				this.onAdded(tool);
+				tool.SetAttribute("setup", true);
+			}
+		});
+		this.player.Backpack.ChildAdded.Connect((tool) => {
 			// eslint-disable-next-line roblox-ts/lua-truthiness
 			if (tool.IsA("Tool") && !tool.GetAttribute("setup")) {
 				this.onAdded(tool);

@@ -1,17 +1,18 @@
 import React from "@rbxts/react";
 import { ActionsController, DeviceTypeHandler, EInputType } from "@rbxts/input-actions";
 import useUserState from "client/controllers/hooks/useState";
-import { EPlayerState, PlayerState } from "client/controllers/data/State";
+import { EPlayerState } from "client/controllers/data/State";
 import RHunterContainer from "./container";
-
-interface Props {
-	hunger?: number;
-}
+import useArrows from "client/controllers/hooks/useArrows";
+import useAttribute from "client/controllers/hooks/useAttribute";
+import { Players } from "@rbxts/services";
 
 export default function RHunterUi() {
 	const device = DeviceTypeHandler.GetMainInputType();
+	const player = Players.LocalPlayer;
 	const placingTrap = useUserState(EPlayerState.placingTrap);
-
+	const { currentArrows, percentage, isFull } = useArrows();
+	const traps = useAttribute(player, "traps", 3) as number;
 	return (
 		<frame
 			AnchorPoint={new Vector2(1, 0)}
@@ -35,8 +36,10 @@ export default function RHunterUi() {
 				/>
 				<RHunterContainer
 					icon={"rbxassetid://6977364783"}
-					text={device === EInputType.KeyboardAndMouse ? "F" : device === EInputType.Touch ? "Touch" : "Y"}
-					action={() => ActionsController.Press("taunt")}
+					text={`${
+						device === EInputType.KeyboardAndMouse ? "F" : device === EInputType.Touch ? "Touch" : "R2"
+					} (${traps}/3)`}
+					action={() => ActionsController.Press("trap")}
 					active={placingTrap}
 				></RHunterContainer>
 
@@ -47,7 +50,7 @@ export default function RHunterUi() {
 				>
 					<textlabel
 						Size={UDim2.fromScale(1, 0.5)}
-						Text={"0/3"}
+						Text={`${currentArrows}/3`}
 						FontFace={new Font("rbxasset://fonts/families/FredokaOne.json")}
 						TextColor3={new Color3(1, 1, 1)}
 						BackgroundTransparency={1}
@@ -59,7 +62,8 @@ export default function RHunterUi() {
 					</textlabel>
 					<uigradient
 						key={"UIGradient"}
-						Offset={new Vector2(-1, 0)}
+						Offset={new Vector2(-percentage, 0)}
+						Enabled={!isFull}
 						Color={
 							new ColorSequence([
 								new ColorSequenceKeypoint(0, Color3.fromRGB(0, 0, 0)),

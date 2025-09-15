@@ -18,8 +18,10 @@
 		"imagelabel",
 		"Keypoint",
 		"rbxasset",
+		"Regen",
 		"Roact",
 		"uicorner",
 		"uistroke"
-	]
+	],
+	"discord.enabled": false
 }

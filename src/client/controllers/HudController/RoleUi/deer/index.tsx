@@ -12,7 +12,6 @@ interface Props {
 export default function RDeerUi({ hunger }: Props = { hunger: 2000 }) {
 	const device = DeviceTypeHandler.GetMainInputType();
 	const { hunger: currentHunger, percentage } = useHunger(hunger ?? 1000);
-
 	const scanActive = useUserState(EPlayerState.scanning);
 	const eatingActive = useUserState(EPlayerState.eating);
 	const tauntActive = useUserState(EPlayerState.taunt);
