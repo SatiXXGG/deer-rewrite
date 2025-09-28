@@ -1,15 +1,15 @@
 import { Controller, OnStart } from "@flamework/core";
-import Make from "@rbxts/make";
 import { Players, RunService } from "@rbxts/services";
 import { Trove } from "@rbxts/trove";
 import { onCharacterAdded } from "client/modding/onCharacterAdded/interface";
 import { ICharacter } from "shared/components/types/Character";
-import { DeerAnimations, WendigoAnimations } from "shared/data/Animations";
 import { Roles } from "shared/types/RoleTags";
 import getRole from "shared/utils/getRole";
 import { AnimationController } from "./AnimationController";
 import { EPlayerState, PlayerState } from "../data/State";
 import { Events } from "client/network";
+import { EItemClass } from "shared/types/GameItem";
+import { BowSkinsInfo } from "shared/data/Skins";
 
 @Controller({})
 export class MovementController implements OnStart, onCharacterAdded {
@@ -29,7 +29,24 @@ export class MovementController implements OnStart, onCharacterAdded {
 				});
 			}
 		});
+
+		for (const [index, info] of pairs(BowSkinsInfo)) {
+			this.AnimationController.create(info.walk, "walk" + info.id);
+			this.AnimationController.create(info.idle, "idle" + info.id);
+			this.AnimationController.create(info.fire, "fire" + info.id);
+		}
 	}
+
+	hasBow(character: ICharacter) {
+		let has: string | undefined = undefined;
+		character.GetChildren().forEach((child) => {
+			if (child.GetAttribute("class") === EItemClass.bow && child.IsA("Tool")) {
+				has = child.Name;
+			}
+		});
+		return has;
+	}
+
 	onCharacterAdded(character: ICharacter): void {
 		task.wait(0.1);
 		this.trove.clean();
@@ -45,16 +62,33 @@ export class MovementController implements OnStart, onCharacterAdded {
 		const humanoid = character.Humanoid;
 
 		this.trove.connect(humanoid.Running, (speed) => {
+			const hasBow = this.hasBow(character);
 			if (speed < 1) {
-				this.AnimationController.play("idle" + anims, true);
-			} else if (speed < 16) {
-				if (PlayerState.listHasState(EPlayerState.hungry)) {
-					this.AnimationController.play("run" + anims, true);
+				if (!hasBow) {
+					this.AnimationController.play("idle" + anims, true);
 				} else {
-					this.AnimationController.play("walk" + anims, true);
+					this.AnimationController.play("idle" + hasBow, true);
+				}
+			} else if (speed < 16) {
+				if (!hasBow) {
+					if (PlayerState.listHasState(EPlayerState.hungry)) {
+						this.AnimationController.play("run" + anims, true);
+					} else {
+						this.AnimationController.play("walk" + anims, true);
+					}
+				} else {
+					if (PlayerState.listHasState(EPlayerState.hungry)) {
+						this.AnimationController.play("walk" + hasBow, true);
+					} else {
+						this.AnimationController.play("walk" + hasBow, true);
+					}
 				}
 			} else if (speed > 20) {
-				this.AnimationController.play("run" + anims, true);
+				if (!hasBow) {
+					this.AnimationController.play("run" + anims, true);
+				} else {
+					this.AnimationController.play("run" + hasBow, true);
+				}
 			}
 		});
 

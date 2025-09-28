@@ -39,6 +39,10 @@ export interface IBuyableInfo extends GameItem {
 export interface IBowInfo extends IBuyableInfo {
 	arrow: EArrowType;
 	force: number;
+	handToWeld: "LeftHand" | "RightHand";
+	idle: `rbxassetid://${string}`;
+	walk: `rbxassetid://${string}`;
+	fire: `rbxassetid://${string}`;
 }
 
 export const DeerSkinsInfo: Record<EDeerSkins, IBuyableInfo> = {
@@ -135,6 +139,10 @@ export const BowSkinsInfo: Record<EBowSkins, IBowInfo> = {
 		display: "Default",
 		arrow: EArrowType.default,
 		force: 500,
+		handToWeld: "LeftHand",
+		idle: "rbxassetid://135333313951275",
+		walk: "rbxassetid://72202332015163",
+		fire: "rbxassetid://91496088203878",
 	},
 
 	[EBowSkins.toy]: {
@@ -145,6 +153,10 @@ export const BowSkinsInfo: Record<EBowSkins, IBowInfo> = {
 		display: "Toy",
 		arrow: EArrowType.toy,
 		force: 500,
+		handToWeld: "LeftHand",
+		idle: "rbxassetid://135333313951275",
+		walk: "rbxassetid://72202332015163",
+		fire: "rbxassetid://91496088203878",
 	},
 };
 

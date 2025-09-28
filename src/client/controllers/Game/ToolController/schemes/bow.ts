@@ -19,6 +19,8 @@ export const TsBow = {
 				Events.bow.shot(mouse.Hit.Position);
 			}
 		});
+		player.CameraMode = Enum.CameraMode.LockFirstPerson;
+		player.CameraMinZoomDistance = 0.5;
 
 		/** arrows */
 	},

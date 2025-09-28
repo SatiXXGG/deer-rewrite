@@ -2,6 +2,7 @@ import { OnStart } from "@flamework/core";
 import { Component, BaseComponent } from "@flamework/components";
 import { ICharacter } from "shared/components/types/Character";
 import { PhysicsService, Workspace } from "@rbxts/services";
+import Make from "@rbxts/make";
 
 PhysicsService.RegisterCollisionGroup("deer");
 PhysicsService.CollisionGroupSetCollidable("deer", "deer", false);
@@ -18,13 +19,39 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 	private loop = coroutine.create(() => {
 		while (this.instance) {
 			this.move();
-			task.wait(math.random(20, 30));
+			task.wait(math.random(5, 30));
 		}
 		coroutine.yield();
 	});
 	onStart() {
+		const idleAnimation = Make("Animation", {
+			Parent: this.npc,
+			Name: "Idle",
+			AnimationId: "rbxassetid://78646183339693",
+		});
+
+		const walkAnimation = Make("Animation", {
+			Parent: this.npc,
+			Name: "Walk",
+			AnimationId: "rbxassetid://125899269116814",
+		});
+
+		const idleTrack = this.npc.Humanoid.Animator.LoadAnimation(idleAnimation);
+		const walkTrack = this.npc.Humanoid.Animator.LoadAnimation(walkAnimation);
+		idleTrack.Play();
+		const moveConn = this.npc.Humanoid.Running.Connect((speed) => {
+			if (speed < 1) {
+				idleTrack.Play();
+				walkTrack.Stop();
+			} else {
+				idleTrack.Stop();
+				walkTrack.Play();
+			}
+		});
+
 		this.instance.Destroying.Connect(() => {
 			super.destroy();
+			moveConn.Disconnect();
 		});
 
 		//* collision handling
@@ -34,6 +61,7 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 			}
 		});
 		task.delay(5, () => {
+			print("loop resumed");
 			coroutine.resume(this.loop);
 		});
 	}

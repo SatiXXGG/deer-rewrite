@@ -5,6 +5,8 @@ import { GetInfoByClass, IBowInfo } from "shared/data/Skins";
 import { EItemClass } from "shared/types/GameItem";
 import { onPlayerJoined } from "server/modding/onPlayerJoined/interface";
 import { Players } from "@rbxts/services";
+import Make from "@rbxts/make";
+import { ICharacter } from "shared/components/types/Character";
 
 interface IToolInstance extends Tool {
 	Handle: BasePart;
@@ -36,12 +38,14 @@ interface IBowInstance extends IToolInstance {
 			coroutine.yield();
 		});
  */
+
 @Service({})
 export class ToolService implements OnStart, onPlayerJoined {
 	constructor(private EntityService: EntityService) {}
 	onStart() {
 		Events.bow.shot.connect((player, hit) => {
-			if (player.Character && ((player.GetAttribute("arrows") as number) ?? 0) > 0) {
+			const character = player.Character as ICharacter | undefined;
+			if (character && ((player.GetAttribute("arrows") as number) ?? 0) > 0) {
 				const tool = this.getTool<IBowInstance>(player, "bow");
 				if (tool) {
 					const info = GetInfoByClass<IBowInfo>(EItemClass.bow, tool.Name);
@@ -49,6 +53,20 @@ export class ToolService implements OnStart, onPlayerJoined {
 					const origin = tool.Handle.firePos.WorldPosition;
 					this.EntityService.arrow(player, hit, origin, info);
 					player.SetAttribute("arrows", (player.GetAttribute("arrows") as number) - 1);
+					//* play animations
+					const animation = Make("Animation", {
+						AnimationId: info.fire,
+						Parent: player.Character,
+						Name: "fire",
+					});
+
+					const loaded = character.Humanoid.Animator.LoadAnimation(animation);
+
+					loaded.Play();
+					loaded.Ended.Once(() => {
+						loaded.Destroy();
+						animation.Destroy();
+					});
 				}
 			}
 		});
@@ -62,8 +80,10 @@ export class ToolService implements OnStart, onPlayerJoined {
 		return found;
 	}
 	setup(tool: IToolInstance, player: Player, Class: string) {
+		const character = player.Character as ICharacter;
+		if (!character) return;
 		if (Class === "bow") {
-			print("Server 🏹 Setup");
+			const info = GetInfoByClass<IBowInfo>(EItemClass.bow, tool.Name);
 			task.spawn(() => {
 				player.SetAttribute("arrows", 3);
 				player.SetAttribute("lastArrowTick", tick());
@@ -82,6 +102,29 @@ export class ToolService implements OnStart, onPlayerJoined {
 				}
 				coroutine.yield();
 			});
+			//* motors
+
+			const model = tool.FindFirstChild("model") as Model & { Handle: BasePart };
+			let motor: Motor6D | undefined = undefined;
+			if (model) {
+				tool.Equipped.Connect(() => {
+					if (motor !== undefined) {
+						motor.Destroy();
+					}
+
+					motor = Make("Motor6D", {
+						Parent: character.HumanoidRootPart,
+						Part0: character.WaitForChild(info.handToWeld) as BasePart,
+						Part1: model.Handle,
+					});
+
+					model.Parent = character;
+				});
+
+				tool.Unequipped.Connect(() => {
+					model.Parent = tool;
+				});
+			}
 		}
 	}
 

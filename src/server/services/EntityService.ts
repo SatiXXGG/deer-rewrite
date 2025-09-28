@@ -1,7 +1,7 @@
 import { OnStart, Service } from "@flamework/core";
 import FastCast from "@rbxts/fastcast";
 import Make from "@rbxts/make";
-import { ReplicatedStorage, ServerStorage, Workspace } from "@rbxts/services";
+import { Players, ReplicatedStorage, ServerStorage, Workspace } from "@rbxts/services";
 import { Events } from "server/network";
 import { ICharacter, IDeerSkin } from "shared/components/types/Character";
 import { IBowInfo } from "shared/data/Skins";
@@ -84,15 +84,25 @@ export class EntityService implements OnStart {
 			(cosmeticBullet as BasePart).CFrame = CFrame.lookAt(last, newPos);
 		});
 
-		caster.RayHit.Connect((_, ray) => {
+		caster.RayHit.Connect((_, ray, sv, bullet) => {
 			const hit = ray.Instance;
-			const character = isPlayer(hit, Roles.deer);
-			if (character) {
-				character.Humanoid.TakeDamage(100000);
+			const character = hit.FindFirstAncestorWhichIsA("Model") as ICharacter | undefined;
+			if (character && character.FindFirstChildOfClass("Humanoid")) {
+				const player = Players.GetPlayerFromCharacter(character);
+				if ((player && getRole(player) === Roles.deer) || !player) {
+					character.Humanoid.TakeDamage(99999);
+					bullet?.Destroy();
+					task.wait();
+					character.Destroy();
+				}
 			}
+
+			task.delay(1, () => {
+				bullet?.Destroy();
+			});
 		});
 
-		caster.Fire(origin, hit, force, info);
+		caster.Fire(origin, hit.sub(origin), force, info);
 	}
 	/**
 	 * Method for spawning traps

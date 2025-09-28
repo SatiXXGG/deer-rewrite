@@ -79,6 +79,7 @@ export class SpawnService implements OnStart {
 			if (ray) {
 				const skin = ReplicatedStorage.skins.deer.default.Clone() as ICharacter;
 				skin.Parent = this.MapService.currentMap!;
+				skin.AddTag("deer");
 				skin.HumanoidRootPart.CFrame = new CFrame(ray.Position.add(new Vector3(0, 5, 0)));
 			}
 		}

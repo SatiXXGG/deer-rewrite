@@ -2,7 +2,6 @@ import { Service, OnStart } from "@flamework/core";
 import { ReplicatedStorage, Workspace } from "@rbxts/services";
 import { DataService } from "./DataService";
 import { ICharacter } from "shared/components/types/Character";
-
 @Service({})
 export class AvatarService implements OnStart {
 	private deerSkins = ReplicatedStorage.skins;
