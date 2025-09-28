@@ -57,7 +57,8 @@ export class MapService implements OnStart {
 				if (
 					character &&
 					character.FindFirstChildOfClass("Humanoid") &&
-					Players.GetPlayerFromCharacter(character)
+					Players.GetPlayerFromCharacter(character) &&
+					this.RoundService.get() === Rounds.Survive
 				) {
 					const player = Players.GetPlayerFromCharacter(character)!;
 					if (

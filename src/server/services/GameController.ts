@@ -60,6 +60,7 @@ export class GameController implements OnStart {
 				this.RoundService.next();
 			} else if (Rounds.Intermission === current) {
 				// round ends
+				print("round ends");
 				this.SpawnService.resetAll();
 				this.RoundService.reset();
 			}

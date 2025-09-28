@@ -3,6 +3,12 @@ import { EItemClass, GameItem } from "./types/GameItem";
 import { EQuests, EQuestStatus, IQuestData } from "./data/Quest";
 import { EUserSetting } from "./data/UserSettings";
 import { NetworkUnreliable } from "@flamework/networking/out/types";
+import { Roles } from "./types/RoleTags";
+
+interface IHunterInfo {
+	id: number;
+	dead: boolean;
+}
 
 interface ClientToServerEvents {
 	bow: {
@@ -35,6 +41,9 @@ interface ServerToClientEvents {
 	};
 	trap: {
 		set: NetworkUnreliable<() => void>;
+	};
+	winners: {
+		set(h1: IHunterInfo, h2: IHunterInfo, role: Roles): void;
 	};
 }
 

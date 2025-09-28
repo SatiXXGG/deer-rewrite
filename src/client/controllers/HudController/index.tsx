@@ -12,6 +12,7 @@ import RTransition from "../Elements/Transition";
 import RDeerUi from "./RoleUi/deer";
 import RWendigoUi from "./RoleUi/wendigo";
 import RHunterUi from "./RoleUi/hunter";
+import RWinnerScreen from "./winner";
 @Controller({})
 export class HudController implements OnStart, onCharacterAdded {
 	private player = Players.LocalPlayer;
@@ -22,10 +23,20 @@ export class HudController implements OnStart, onCharacterAdded {
 		CollectionService.TagAdded.Connect((tag) => {
 			if (getRole(this.player) === tag) {
 				this.root.render(
-					<screengui ZIndexBehavior={"Sibling"} IgnoreGuiInset={true} ResetOnSpawn={true}>
-						<RTimer></RTimer>
-						<RHunterUi></RHunterUi>
-					</screengui>,
+					<>
+						<screengui ZIndexBehavior={"Sibling"} IgnoreGuiInset={true} ResetOnSpawn={true} key={"ResetUi"}>
+							<RTimer></RTimer>
+							<RHunterUi></RHunterUi>
+						</screengui>
+						<screengui
+							ZIndexBehavior={"Sibling"}
+							IgnoreGuiInset={true}
+							ResetOnSpawn={false}
+							key={"NoResetUi"}
+						>
+							<RWinnerScreen></RWinnerScreen>
+						</screengui>
+					</>,
 				);
 			}
 		});

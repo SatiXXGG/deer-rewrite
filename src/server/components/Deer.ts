@@ -24,6 +24,8 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 		coroutine.yield();
 	});
 	onStart() {
+		this.npc.WaitForChild("Humanoid", 2);
+		assert(this.npc.Humanoid, "No humanoid");
 		const idleAnimation = Make("Animation", {
 			Parent: this.npc,
 			Name: "Idle",
@@ -86,6 +88,7 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 	}
 
 	move() {
+		if (!this.npc.FindFirstChildOfClass("Humanoid")) return;
 		this.npc.Humanoid.MoveTo(this.calcRandomPos());
 	}
 }

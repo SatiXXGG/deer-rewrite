@@ -1,6 +1,9 @@
 import { Service, OnStart } from "@flamework/core";
-import { CollectionService, Workspace } from "@rbxts/services";
+import { CollectionService, Players, Workspace } from "@rbxts/services";
+import { Events } from "server/network";
 import { Roles } from "shared/types/RoleTags";
+import { DataService } from "./DataService";
+import getRole from "shared/utils/getRole";
 
 export enum Rounds {
 	Intermission = "Intermission",
@@ -35,11 +38,11 @@ const RoundsInfo: Record<Rounds, RoundInfo> = {
 		order: 3,
 	},
 	[Rounds.OnRound]: {
-		duration: 5,
+		duration: 2,
 		order: 4,
 	},
 	[Rounds.Survive]: {
-		duration: 60,
+		duration: 12,
 		order: 5,
 	},
 	[Rounds.Detection]: {
@@ -55,6 +58,8 @@ export class RoundService implements OnStart {
 	private lastChange: number = os.time();
 	private roundChange = new Set<ChangeCallback>();
 	private gamingRounds = [Rounds.Hide, Rounds.Survive, Rounds.OnRound];
+
+	constructor(private DataService: DataService) {}
 	getNext() {
 		const currentInfo = RoundsInfo[this.current];
 		const currentN = currentInfo.order;
@@ -146,11 +151,43 @@ export class RoundService implements OnStart {
 
 	win(role: Roles.hunter | Roles.deer) {
 		print("🥟 Role won: ", role);
+		const hunters = CollectionService.GetTagged(Roles.hunter).filter((player) => player.IsA("Player")) as Player[];
+		const safeHunters = CollectionService.GetTagged(Roles.safeHunter).filter((player) =>
+			player.IsA("Player"),
+		) as Player[];
+
+		if (hunters.size() > 0) {
+			Events.winners.set.broadcast(
+				{
+					id: hunters[0].UserId,
+					dead: safeHunters.includes(hunters[0]),
+				},
+				{
+					id: hunters[1] !== undefined ? hunters[1].UserId : hunters[0].UserId,
+					dead:
+						hunters[1] !== undefined ? safeHunters.includes(hunters[1]) : safeHunters.includes(hunters[0]),
+				},
+				role,
+			);
+		}
+
+		Players.GetPlayers().forEach((player) => {
+			const userRole = getRole(player);
+			if (userRole === role) {
+				this.DataService.addCash(player, 200);
+			} else {
+				this.DataService.addCash(player, 20);
+			}
+		});
+
+		task.wait(1);
 		this.reset();
 	}
 
 	reset() {
 		print("🔄 Game Loop Reset");
+		this.lastChange = os.time();
 		this.current = Rounds.Intermission;
+		this.updateRound();
 	}
 }

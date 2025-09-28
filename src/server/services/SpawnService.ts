@@ -5,9 +5,6 @@ import { ICharacter } from "shared/components/types/Character";
 import { RoleArray, Roles } from "shared/types/RoleTags";
 import { Trove } from "@rbxts/trove";
 import { AvatarService } from "./AvatarService";
-import Make from "@rbxts/make";
-import { QuestService } from "./QuestService";
-import { EQuests } from "shared/data/Quest";
 import { Events } from "server/network";
 import { DataService } from "./DataService";
 import getRole from "shared/utils/getRole";
@@ -17,7 +14,6 @@ export class SpawnService implements OnStart {
 	constructor(
 		private MapService: MapService,
 		private AvatarService: AvatarService,
-		private QuestService: QuestService,
 		private DataService: DataService,
 	) {}
 	onStart() {
@@ -91,11 +87,13 @@ export class SpawnService implements OnStart {
 		if (character) {
 			trove.connect(character.Destroying, () => {
 				player.RemoveTag(role);
+				player.RemoveTag("playing");
 				trove.clean();
 			});
 
 			trove.connect(character.Humanoid.Died, () => {
 				player.RemoveTag(role);
+				player.RemoveTag("playing");
 				trove.clean();
 			});
 		} else {
@@ -106,6 +104,7 @@ export class SpawnService implements OnStart {
 	spawnHunter(player: Player) {
 		player.AddTag(Roles.hunter);
 		player.AddTag(Roles.playing);
+		player.AddTag("playing");
 		const spawn = this.MapService.getHunterSpawn();
 		const character = player.Character as ICharacter | undefined;
 		if (spawn && character) {
@@ -136,6 +135,7 @@ export class SpawnService implements OnStart {
 		this.cleanTags(player);
 		player.AddTag(Roles.playing);
 		player.AddTag(Roles.deer);
+		player.AddTag("playing");
 		const character = this.AvatarService.changeDeer(player);
 		if (character) {
 			//* moves to the spawn
