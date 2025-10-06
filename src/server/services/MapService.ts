@@ -1,6 +1,6 @@
 import { Service, OnStart } from "@flamework/core";
 import { MapModel } from "./VotingService";
-import { CollectionService, Players, ServerStorage, Workspace } from "@rbxts/services";
+import { CollectionService, Players, ServerStorage, TweenService, Workspace } from "@rbxts/services";
 import { ICharacter } from "shared/components/types/Character";
 import { Roles } from "shared/types/RoleTags";
 import { Rounds, RoundService } from "./RoundService";
@@ -8,13 +8,36 @@ import { Rounds, RoundService } from "./RoundService";
 interface IHunterSpawn extends BasePart {
 	spawn: BasePart;
 }
+interface ICabin extends Model {
+	hinge: BasePart;
+}
 
 @Service({})
 export class MapService implements OnStart {
 	public currentMap: MapModel | undefined = undefined;
 	private rayDirection = new Vector3(0, -1000, 0);
 	constructor(private RoundService: RoundService) {}
-	onStart() {}
+	onStart() {
+		// cabin opening
+		this.RoundService.onChange((round) => {
+			if (round === Rounds.OnRound && this.currentMap) {
+				const childrens = this.currentMap.map.GetChildren();
+				const tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0);
+				childrens.forEach((children) => {
+					if (children.GetTags().includes("cabin")) {
+						const cabin = children as ICabin;
+						const tween = TweenService.Create(cabin.hinge, tweenInfo, {
+							CFrame: cabin.hinge.CFrame.mul(CFrame.Angles(0, math.rad(100), 0)),
+						});
+						tween.Play();
+						tween.Completed.Once(() => {
+							tween.Destroy();
+						});
+					}
+				});
+			}
+		});
+	}
 	getSpawn() {
 		if (this.currentMap) {
 			const random = this.getRandomFromFolder(this.currentMap.npcSpawns);
@@ -72,7 +95,6 @@ export class MapService implements OnStart {
 						const currentHunters = CollectionService.GetTagged(Roles.hunter).size();
 						if (safeHunters === currentHunters) {
 							this.RoundService.win(Roles.hunter);
-							//todo: logic
 						}
 					}
 				}

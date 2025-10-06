@@ -1,5 +1,5 @@
 import { Service, OnStart } from "@flamework/core";
-import { DeerSkinsInfo, WendigoSkinsInfo } from "shared/data/Skins";
+import { BowSkinsInfo, DeerSkinsInfo, TauntSkinsInfo, WendigoSkinsInfo } from "shared/data/Skins";
 import { EItemClass, GameItem } from "shared/types/GameItem";
 
 @Service({})
@@ -13,6 +13,14 @@ export class ItemService implements OnStart {
 		}
 		//* Deer skins setup
 		for (const [index, item] of pairs(WendigoSkinsInfo)) {
+			this.record(item);
+		}
+		//* Bow skins setup
+		for (const [index, item] of pairs(BowSkinsInfo)) {
+			this.record(item);
+		}
+		//* taunts skins setup
+		for (const [index, item] of pairs(TauntSkinsInfo)) {
 			this.record(item);
 		}
 	}

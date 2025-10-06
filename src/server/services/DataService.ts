@@ -68,6 +68,7 @@ export class DataService implements OnStart, onPlayerJoined {
 	onStart() {
 		Functions.skins.buy.setCallback((player, Class, id) => {
 			const info = this.ItemService.getInfo<IBuyableInfo>(Class, id);
+			print(info);
 			if (info) {
 				const { price } = info;
 				if (this.hasCash(player, price)) {
@@ -78,6 +79,10 @@ export class DataService implements OnStart, onPlayerJoined {
 				}
 			}
 			return false;
+		});
+
+		Functions.skins.isBought.setCallback((player, Class, id) => {
+			return this.has(player, Class, id);
 		});
 
 		Functions.inventory.getInventoryItems.setCallback((player) => {
@@ -96,6 +101,8 @@ export class DataService implements OnStart, onPlayerJoined {
 					return profile.Data.currentWendigo === id;
 				} else if (Class === EItemClass.taunt) {
 					return profile.Data.currentTaunt === id;
+				} else if (Class === EItemClass.bow) {
+					return profile.Data.currentBow === id;
 				}
 			}
 			return false;
@@ -124,6 +131,13 @@ export class DataService implements OnStart, onPlayerJoined {
 						return false;
 					}
 					profile.Data.currentTaunt = id as ETauntSkins;
+					return true;
+				} else if (Class === EItemClass.bow) {
+					if (profile.Data.currentBow === id) {
+						profile.Data.currentBow = EBowSkins.default;
+						return false;
+					}
+					profile.Data.currentBow = id as EBowSkins;
 					return true;
 				}
 			}

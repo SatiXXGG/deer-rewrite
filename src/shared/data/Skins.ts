@@ -149,7 +149,7 @@ export const BowSkinsInfo: Record<EBowSkins, IBowInfo> = {
 		id: EBowSkins.toy,
 		class: EItemClass.bow,
 		startWith: false,
-		price: 0,
+		price: 3000,
 		display: "Toy",
 		arrow: EArrowType.toy,
 		force: 500,

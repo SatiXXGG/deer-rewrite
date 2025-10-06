@@ -1,5 +1,6 @@
+import Make from "@rbxts/make";
 import { useSpring } from "@rbxts/pretty-react-hooks";
-import React, { Suspense, useRef, useState } from "@rbxts/react";
+import React, { Suspense, useEffect, useRef, useState } from "@rbxts/react";
 import ObjectViewport from "client/controllers/Elements/ObjectViewport";
 import { Functions } from "client/network";
 import getClassCf from "client/utils/getClassCf";
@@ -8,13 +9,18 @@ import { EItemClass } from "shared/types/GameItem";
 
 interface IProps {
 	info: IBuyableInfo;
-	bought: boolean;
 }
 
 export default function RShopElement(props: IProps) {
 	const { info } = props;
 	const [mainScale, setMainScale] = useState(1);
-	const [isBought, setBought] = useState(props.bought);
+	const [isBought, setBought] = useState(false);
+
+	useEffect(() => {
+		Functions.skins.isBought(info.class, info.id).then((result) => {
+			setBought(result);
+		});
+	}, []);
 
 	const springScale = useSpring(mainScale);
 
@@ -22,13 +28,15 @@ export default function RShopElement(props: IProps) {
 	let preview = container.FindFirstChild(info.id) as Model | undefined;
 	assert(preview, "Preview is undefined: " + info.display + " " + info.id);
 	preview = preview.Clone();
+
+	//* converts preview to model
+
 	const buttonEvents: React.InstanceEvent<ImageButton> = {
 		Activated: () => {
 			if (isBought) return;
-			const result = Functions.skins.buy.invokeWithTimeout(1, info.class, info.id).expect();
-			if (result) {
-				setBought(true);
-			}
+			Functions.skins.buy.invoke(info.class, info.id).then((result) => {
+				setBought(result);
+			});
 		},
 		MouseEnter: () => {
 			setMainScale(1.05);
@@ -38,7 +46,7 @@ export default function RShopElement(props: IProps) {
 		},
 	};
 	assert(preview !== undefined, "Preview is undefined: " + info.display + " " + info.id);
-	const cf = info.class !== EItemClass.taunt ? preview.GetPivot().mul(getClassCf(info.class)) : new CFrame();
+	const cf = info.class !== EItemClass.taunt ? new CFrame().mul(getClassCf(info.class)) : new CFrame();
 	//* cframe adjustment
 
 	return (

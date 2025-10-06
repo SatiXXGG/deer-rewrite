@@ -21,6 +21,7 @@ export interface MapModel extends Model {
 	npcSpawns: Folder;
 	hunterSpawns: Folder;
 	spawnZone: BasePart;
+	map: Model; // base map
 }
 
 export interface VotingModel extends Model {

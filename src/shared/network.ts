@@ -51,6 +51,7 @@ interface ClientToServerFunctions {
 	skins: {
 		buy(Class: EItemClass, id: string): boolean;
 		isEquipped(Class: EItemClass, id: string): boolean;
+		isBought(Class: EItemClass, id: string): boolean;
 	};
 	inventory: {
 		getInventoryItems(): GameItem[];

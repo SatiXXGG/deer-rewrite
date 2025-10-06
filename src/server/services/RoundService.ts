@@ -22,11 +22,11 @@ interface RoundInfo {
 
 const RoundsInfo: Record<Rounds, RoundInfo> = {
 	[Rounds.Intermission]: {
-		duration: 5,
+		duration: 20,
 		order: 0,
 	},
 	[Rounds.Voting]: {
-		duration: 5,
+		duration: 15,
 		order: 1,
 	},
 	[Rounds.Loading]: {

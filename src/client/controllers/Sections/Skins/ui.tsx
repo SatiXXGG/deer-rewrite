@@ -1,27 +1,37 @@
 import React, { useEffect } from "@rbxts/react";
 import RSkinsHeader from "./header";
 import RSkinsRowHolder from "./row";
-import { EDeerSkins, EWendigoSkins, IBuyableInfo, WendigoSkinsInfo } from "shared/data/Skins";
+import { BowSkinsInfo, IBowInfo, IBuyableInfo, TauntSkinsInfo, WendigoSkinsInfo } from "shared/data/Skins";
 import RShopElement from "./skin";
+import Object from "@rbxts/object-utils";
+import { Functions } from "client/network";
 
 export default function RSkinsUi() {
 	const wendigoMapped: IBuyableInfo[][] = [];
-
-	const mapQueue: [IBuyableInfo[][], Record<EWendigoSkins | EDeerSkins, IBuyableInfo>][] = [
+	const bowsMapped: IBowInfo[][] = [];
+	const tauntsMapped: IBuyableInfo[][] = [];
+	const mapQueue: [IBuyableInfo[][], Record<string, IBuyableInfo>][] = [
 		[wendigoMapped, WendigoSkinsInfo],
+		[bowsMapped, BowSkinsInfo],
+		[tauntsMapped, TauntSkinsInfo],
 	];
 
 	mapQueue.forEach(([map, to]) => {
 		let currentRow: IBuyableInfo[] = [];
-		for (const [index, info] of pairs(to)) {
+		Object.entries(to).forEach(([index, info]) => {
 			currentRow.push(info);
 			if (currentRow.size() === 4) {
 				map.push(currentRow);
 				currentRow = [];
 			}
+		});
+
+		if (map.size() === 0) {
+			map.push(currentRow);
 		}
 	});
-	//* 6 mapping
+
+	warn(tauntsMapped, bowsMapped);
 
 	return (
 		<imagelabel
@@ -67,7 +77,23 @@ export default function RSkinsUi() {
 					{wendigoMapped.map((row) => (
 						<RSkinsRowHolder>
 							{row.map((info) => {
-								return <RShopElement info={info} bought={false}></RShopElement>;
+								return <RShopElement info={info}></RShopElement>;
+							})}
+						</RSkinsRowHolder>
+					))}
+
+					{bowsMapped.map((row) => (
+						<RSkinsRowHolder>
+							{row.map((info) => {
+								return <RShopElement info={info}></RShopElement>;
+							})}
+						</RSkinsRowHolder>
+					))}
+
+					{tauntsMapped.map((row) => (
+						<RSkinsRowHolder>
+							{row.map((info) => {
+								return <RShopElement info={info}></RShopElement>;
 							})}
 						</RSkinsRowHolder>
 					))}

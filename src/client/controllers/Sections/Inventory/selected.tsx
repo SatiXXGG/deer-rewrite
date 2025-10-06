@@ -145,7 +145,6 @@ export default function RInventorySelected() {
 							if (context) {
 								Functions.inventory.equip.invoke(context.Class, context.selected).then((res) => {
 									setEquipped(res);
-									print(res);
 								});
 							}
 						},
