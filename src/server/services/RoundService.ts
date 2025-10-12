@@ -1,5 +1,5 @@
 import { Service, OnStart } from "@flamework/core";
-import { CollectionService, Players, Workspace } from "@rbxts/services";
+import { CollectionService, Players, SoundService, Workspace } from "@rbxts/services";
 import { Events } from "server/network";
 import { Roles } from "shared/types/RoleTags";
 import { DataService } from "./DataService";
@@ -58,7 +58,7 @@ export class RoundService implements OnStart {
 	private lastChange: number = os.time();
 	private roundChange = new Set<ChangeCallback>();
 	private gamingRounds = [Rounds.Hide, Rounds.Survive, Rounds.OnRound];
-
+	private playing = "none";
 	constructor(private DataService: DataService) {}
 	getNext() {
 		const currentInfo = RoundsInfo[this.current];
@@ -100,6 +100,7 @@ export class RoundService implements OnStart {
 		Workspace.SetAttribute("remaining", math.floor(remaining));
 		Workspace.SetAttribute("total", info.duration);
 	}
+
 	onStart() {
 		const loop = coroutine.create(() => {
 			while (game) {
@@ -143,6 +144,35 @@ export class RoundService implements OnStart {
 				}
 			}
 		});
+
+		const onC = (round: Rounds) => {
+			if (this.gamingRounds.includes(round) && this.playing !== "game") {
+				SoundService.GetDescendants().forEach((child) => {
+					if (child.IsA("Sound")) {
+						child.Playing = false;
+						child.TimePosition = 0;
+					}
+				});
+				const sounds = SoundService.game.GetChildren() as Sound[];
+				const random = math.random(0, sounds.size() - 1);
+				sounds[random].Playing = true;
+				this.playing = "game";
+			} else if (!this.gamingRounds.includes(round) && this.playing !== "lobby") {
+				SoundService.GetDescendants().forEach((child) => {
+					if (child.IsA("Sound")) {
+						child.Playing = false;
+						child.TimePosition = 0;
+					}
+				});
+				const sounds = SoundService.lobby.GetChildren() as Sound[];
+				const random = math.random(0, sounds.size() - 1);
+				sounds[random].Playing = true;
+				this.playing = "lobby";
+			}
+		};
+
+		this.onChange(onC);
+		onC(this.current);
 	}
 
 	get() {

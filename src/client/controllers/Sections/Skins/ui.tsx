@@ -1,10 +1,9 @@
-import React, { useEffect } from "@rbxts/react";
+import React from "@rbxts/react";
 import RSkinsHeader from "./header";
 import RSkinsRowHolder from "./row";
 import { BowSkinsInfo, IBowInfo, IBuyableInfo, TauntSkinsInfo, WendigoSkinsInfo } from "shared/data/Skins";
 import RShopElement from "./skin";
 import Object from "@rbxts/object-utils";
-import { Functions } from "client/network";
 
 export default function RSkinsUi() {
 	const wendigoMapped: IBuyableInfo[][] = [];
@@ -30,8 +29,6 @@ export default function RSkinsUi() {
 			map.push(currentRow);
 		}
 	});
-
-	warn(tauntsMapped, bowsMapped);
 
 	return (
 		<imagelabel

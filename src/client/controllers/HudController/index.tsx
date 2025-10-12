@@ -13,11 +13,23 @@ import RDeerUi from "./RoleUi/deer";
 import RWendigoUi from "./RoleUi/wendigo";
 import RHunterUi from "./RoleUi/hunter";
 import RWinnerScreen from "./winner";
+import Make from "@rbxts/make";
 @Controller({})
 export class HudController implements OnStart, onCharacterAdded {
 	private player = Players.LocalPlayer;
 	private playerGui = this.player.WaitForChild("PlayerGui") as PlayerGui;
 	private root = createRoot(this.playerGui);
+	private bubbleHover = Make("Sound", {
+		Name: "BubbleHover",
+		Parent: this.player,
+		SoundId: "rbxassetid://77120543307812",
+	});
+
+	private bubbleClick = Make("Sound", {
+		Name: "BubbleClick",
+		Parent: this.player,
+		SoundId: "rbxassetid://5852470908",
+	});
 
 	onStart() {
 		CollectionService.TagAdded.Connect((tag) => {
@@ -78,5 +90,20 @@ export class HudController implements OnStart, onCharacterAdded {
 				</screengui>,
 			);
 		}
+
+		task.delay(1, () => {
+			print("setting sounds...");
+			this.playerGui.GetDescendants().forEach((child) => {
+				if (child.IsA("TextButton") || child.IsA("ImageButton")) {
+					child.MouseEnter.Connect(() => {
+						if (this.bubbleHover.IsPlaying) return;
+						this.bubbleHover.Play();
+					});
+					child.MouseButton1Click.Connect(() => {
+						this.bubbleClick.Play();
+					});
+				}
+			});
+		});
 	}
 }

@@ -1,6 +1,7 @@
 import Make from "@rbxts/make";
 import { useSpring } from "@rbxts/pretty-react-hooks";
 import React, { Suspense, useEffect, useRef, useState } from "@rbxts/react";
+import { Players } from "@rbxts/services";
 import ObjectViewport from "client/controllers/Elements/ObjectViewport";
 import { Functions } from "client/network";
 import getClassCf from "client/utils/getClassCf";
@@ -10,6 +11,7 @@ import { EItemClass } from "shared/types/GameItem";
 interface IProps {
 	info: IBuyableInfo;
 }
+const player = Players.LocalPlayer;
 
 export default function RShopElement(props: IProps) {
 	const { info } = props;
@@ -36,6 +38,14 @@ export default function RShopElement(props: IProps) {
 			if (isBought) return;
 			Functions.skins.buy.invoke(info.class, info.id).then((result) => {
 				setBought(result);
+				const sound = Make("Sound", {
+					Parent: player.PlayerGui,
+					SoundId: result ? "rbxassetid://133292918309565" : "rbxassetid://2390695935",
+				});
+				sound.Play();
+				sound.Ended.Once(() => {
+					sound.Destroy();
+				});
 			});
 		},
 		MouseEnter: () => {

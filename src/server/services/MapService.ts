@@ -20,14 +20,15 @@ export class MapService implements OnStart {
 	onStart() {
 		// cabin opening
 		this.RoundService.onChange((round) => {
-			if (round === Rounds.OnRound && this.currentMap) {
-				const childrens = this.currentMap.map.GetChildren();
+			print(round === Rounds.OnRound, this.currentMap);
+			if (round === Rounds.OnRound && this.currentMap !== undefined) {
+				const childrens = this.currentMap.GetDescendants();
 				const tweenInfo = new TweenInfo(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0);
 				childrens.forEach((children) => {
 					if (children.GetTags().includes("cabin")) {
 						const cabin = children as ICabin;
 						const tween = TweenService.Create(cabin.hinge, tweenInfo, {
-							CFrame: cabin.hinge.CFrame.mul(CFrame.Angles(0, math.rad(100), 0)),
+							CFrame: cabin.hinge.CFrame.mul(CFrame.Angles(0, math.rad(-100), 0)),
 						});
 						tween.Play();
 						tween.Completed.Once(() => {

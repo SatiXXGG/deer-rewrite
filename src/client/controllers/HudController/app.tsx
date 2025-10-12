@@ -8,9 +8,26 @@ import Rewards from "../Sections/Rewards";
 import Settings from "../Sections/Settings";
 import Skins from "../Sections/Skins";
 import Inventory from "../Sections/Inventory";
+import { Zone } from "@rbxts/zone-plus";
+import { Workspace } from "@rbxts/services";
 
 export default function RApp() {
 	const [opened, setOpened] = useState<string | undefined>(undefined);
+
+	useEffect(() => {
+		const shopZone = new Zone(Workspace.openers.shop);
+		const questsZone = new Zone(Workspace.openers.quests);
+
+		shopZone.localPlayerEntered.Connect(() => setOpened("Skins"));
+		questsZone.localPlayerEntered.Connect(() => setOpened("Quests"));
+		shopZone.localPlayerExited.Connect(() => setOpened(undefined));
+		questsZone.localPlayerExited.Connect(() => setOpened(undefined));
+
+		return () => {
+			shopZone.destroy();
+			questsZone.destroy();
+		};
+	}, []);
 
 	return (
 		<ROpenedContext.Provider value={{ opened, setOpened }}>
