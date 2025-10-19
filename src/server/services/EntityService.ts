@@ -94,8 +94,6 @@ export class EntityService implements OnStart {
 				if ((player && getRole(player) === Roles.deer) || !player) {
 					character.Humanoid.TakeDamage(99999);
 					bullet?.Destroy();
-					task.wait();
-					character.Destroy();
 
 					if (player && getRole(player) === Roles.deer) {
 						this.QuestService.incrementQuests(player, EQuests.kill10deer);

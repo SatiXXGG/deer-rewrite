@@ -4,7 +4,7 @@ import { CollectionService, Players } from "@rbxts/services";
 import { Trove } from "@rbxts/trove";
 import { Roles } from "shared/types/RoleTags";
 
-export default function useHunger(initial: number = 1000) {
+export default function useHunger(initial: number = 1500) {
 	const player = Players.LocalPlayer;
 	const [hunger, setHunger] = useState(initial);
 	const [percentage, setPercentage] = useState(1);
@@ -16,7 +16,7 @@ export default function useHunger(initial: number = 1000) {
 	}, [initial]);
 
 	useEffect(() => {
-		setPercentage(hunger / 1000);
+		setPercentage(hunger / 1500);
 	}, [hunger]);
 
 	useMountEffect(() => {

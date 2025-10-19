@@ -200,13 +200,13 @@ export class SpawnService implements OnStart {
 
 	bindHunger(player: Player, character: ICharacter) {
 		//* Resets
-		player.SetAttribute("Hunger", 1000);
+		player.SetAttribute("Hunger", 1500);
 		/** Hunger handling */
 		const loop = coroutine.create(() => {
 			while (character.Humanoid) {
 				const currentHunger = player.GetAttribute("Hunger") as number;
 				if (currentHunger > 0) {
-					player.SetAttribute("Hunger", math.clamp(currentHunger - 1, 0, 1000));
+					player.SetAttribute("Hunger", math.clamp(currentHunger - 1, 0, 1500));
 				}
 				task.wait();
 			}
