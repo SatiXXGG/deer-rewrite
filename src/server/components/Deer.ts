@@ -1,7 +1,7 @@
 import { OnStart } from "@flamework/core";
 import { Component, BaseComponent } from "@flamework/components";
 import { ICharacter } from "shared/components/types/Character";
-import { PhysicsService, Workspace } from "@rbxts/services";
+import { PathfindingService, PhysicsService, Workspace } from "@rbxts/services";
 import Make from "@rbxts/make";
 
 PhysicsService.RegisterCollisionGroup("deer");
@@ -10,6 +10,62 @@ PhysicsService.CollisionGroupSetCollidable("deer", "deer", false);
 interface Attributes {}
 
 const rad = math.random;
+
+class PathFinding {
+	private humanoid: Humanoid;
+	private path: Path;
+	public showWaypoints = false;
+	constructor(humanoid: Humanoid, params?: AgentParameters) {
+		this.humanoid = humanoid;
+		this.path = PathfindingService.CreatePath(params);
+	}
+
+	private renderWaypoints(waypoint: PathWaypoint) {
+		const part = new Instance("Part");
+		part.Anchored = true;
+		part.CanCollide = false;
+		part.Position = waypoint.Position.add(new Vector3(0, 3, 0));
+		part.Size = new Vector3(0.5, 0.5, 0.5);
+		part.Shape = Enum.PartType.Ball;
+		part.Material = Enum.Material.Neon;
+		part.Parent = Workspace;
+	}
+
+	moveTo(goalPos: Vector3, startPosA?: Vector3) {
+		const character = this.humanoid.FindFirstAncestorOfClass("Model");
+
+		if (character) {
+			const humanoidRoot = character.FindFirstChild("HumanoidRootPart") as BasePart;
+			if (humanoidRoot) {
+				const startPos = startPosA || humanoidRoot.Position;
+
+				try {
+					this.path.ComputeAsync(goalPos, startPos);
+					const waypoints = this.path.GetWaypoints();
+					if (waypoints) {
+						for (let i = 0; i <= 3; i++) {
+							const waypoint = waypoints[i];
+
+							if (waypoint) {
+								if (this.showWaypoints) {
+									this.renderWaypoints(waypoint);
+								}
+
+								this.humanoid.MoveTo(waypoint.Position);
+								this.humanoid.MoveToFinished.Wait();
+							}
+						}
+					} else {
+						//this.moveTo(goalPos);
+					}
+				} catch (e) {
+					error(e);
+				}
+			}
+		}
+	}
+}
+
 @Component({
 	tag: "deer",
 })
@@ -19,10 +75,12 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 	private loop = coroutine.create(() => {
 		while (this.instance) {
 			this.move();
-			task.wait(math.random(5, 30));
+			task.wait(math.random(5, 10));
 		}
 		coroutine.yield();
 	});
+	private path = new PathFinding(this.npc.Humanoid);
+
 	onStart() {
 		this.npc.WaitForChild("Humanoid", 2);
 		assert(this.npc.Humanoid, "No humanoid");
@@ -62,8 +120,7 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 				descendant.CollisionGroup = "deer";
 			}
 		});
-		task.delay(5, () => {
-			print("loop resumed");
+		task.delay(math.random(1, 3), () => {
 			coroutine.resume(this.loop);
 		});
 	}
@@ -88,7 +145,26 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 	}
 
 	move() {
+		const randomN = math.random(0, 100);
+		if (randomN < 50) {
+			const eatAnimation = Make("Animation", {
+				Parent: this.npc,
+				Name: "eat",
+				AnimationId: "rbxassetid://95470529033464",
+			});
+
+			const eatTrack = this.npc.Humanoid.Animator.LoadAnimation(eatAnimation);
+
+			eatTrack.Play();
+			eatTrack.Ended.Once(() => {
+				eatTrack.Destroy();
+				eatAnimation.Destroy();
+			});
+
+			return;
+		}
+
 		if (!this.npc.FindFirstChildOfClass("Humanoid")) return;
-		this.npc.Humanoid.MoveTo(this.calcRandomPos());
+		this.path.moveTo(this.calcRandomPos());
 	}
 }

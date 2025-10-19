@@ -10,6 +10,7 @@ import Skins from "../Sections/Skins";
 import Inventory from "../Sections/Inventory";
 import { Zone } from "@rbxts/zone-plus";
 import { Workspace } from "@rbxts/services";
+import RSpectate from "../Sections/Spectate";
 
 export default function RApp() {
 	const [opened, setOpened] = useState<string | undefined>(undefined);
@@ -36,6 +37,7 @@ export default function RApp() {
 			<Settings></Settings>
 			<Skins></Skins>
 			<Inventory></Inventory>
+			<RSpectate></RSpectate>
 
 			<RButtonContainer>
 				<RSectionButton order={1} id="Info" imageId="rbxassetid://108044423266343" />

@@ -21,10 +21,9 @@ export default function RDeerContainer({ icon, text, action, active }: Props) {
 	}, [active]);
 
 	return (
-		<textbutton
+		<imagebutton
 			BackgroundColor3={new Color3()}
-			BackgroundTransparency={0.55}
-			FontFace={new Font("rbxasset://fonts/families/SourceSansPro.json")}
+			BackgroundTransparency={1}
 			key={"boost"}
 			Event={{
 				Activated: action,
@@ -32,20 +31,9 @@ export default function RDeerContainer({ icon, text, action, active }: Props) {
 			AnchorPoint={new Vector2(0.5, 0.5)}
 			Position={UDim2.fromScale(1.10964, 0.312416)}
 			Size={UDim2.fromScale(0.163912, 0.574718)}
-			Text={""}
-			TextColor3={new Color3()}
-			TextSize={14}
+			Image={"rbxassetid://101864327074825"}
 		>
 			<uiscale key={"UIScale"} Scale={scaleSpring}></uiscale>
-			<uicorner key={"UICorner"} CornerRadius={new UDim(0, 20)} />
-
-			<uistroke
-				key={"UIStroke"}
-				ApplyStrokeMode={Enum.ApplyStrokeMode.Border}
-				Color={new Color3(1, 1, 1)}
-				Thickness={6.7}
-				Transparency={0.59}
-			/>
 
 			<imagelabel
 				BackgroundTransparency={1}
@@ -80,6 +68,6 @@ export default function RDeerContainer({ icon, text, action, active }: Props) {
 				TextColor3={new Color3(1, 1, 1)}
 				TextScaled={true}
 			/>
-		</textbutton>
+		</imagebutton>
 	);
 }

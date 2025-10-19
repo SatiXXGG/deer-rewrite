@@ -10,6 +10,7 @@ import { Roles } from "shared/types/RoleTags";
 @Service({})
 export class GameController implements OnStart {
 	private votingInstance: VotingInstance | undefined;
+	private lastRound = Rounds.Survive;
 	constructor(
 		private VotingService: VotingService,
 		private RoundService: RoundService,
@@ -19,6 +20,10 @@ export class GameController implements OnStart {
 
 	onStart() {
 		this.RoundService.onChange((current) => {
+			if (current === this.lastRound) {
+				return;
+			}
+			this.lastRound = current;
 			if (current === Rounds.Voting) {
 				this.votingInstance = this.VotingService.startVoting();
 			} else if (current === Rounds.Loading && this.votingInstance) {

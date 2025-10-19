@@ -1,5 +1,5 @@
 export const Settings = {
-	hunters: 1,
+	hunters: 0,
 	wendigo: {
 		attackDistance: 12,
 		attackDamage: 9999,

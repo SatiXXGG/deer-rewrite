@@ -11,6 +11,8 @@ import { isPlayer } from "shared/utils/isPlayer";
 import { DataService } from "./DataService";
 import { MapService } from "./MapService";
 import { ITrap } from "server/components/Trap";
+import { QuestService } from "./QuestService";
+import { EQuests } from "shared/data/Quest";
 
 @Service({})
 export class EntityService implements OnStart {
@@ -18,7 +20,7 @@ export class EntityService implements OnStart {
 		Name: "Arrows container",
 		Parent: Workspace,
 	});
-	constructor(private DataService: DataService, private MapService: MapService) {}
+	constructor(private DataService: DataService, private MapService: MapService, private QuestService: QuestService) {}
 
 	onStart() {
 		Events.gameplay.eat.connect((player, mushroom) => {
@@ -94,6 +96,11 @@ export class EntityService implements OnStart {
 					bullet?.Destroy();
 					task.wait();
 					character.Destroy();
+
+					if (player && getRole(player) === Roles.deer) {
+						this.QuestService.incrementQuests(player, EQuests.kill10deer);
+						this.QuestService.incrementQuests(player, EQuests.kill50deer);
+					}
 				}
 			}
 

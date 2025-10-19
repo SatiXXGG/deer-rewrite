@@ -32,8 +32,8 @@ export class HudController implements OnStart, onCharacterAdded {
 	});
 
 	onStart() {
-		CollectionService.TagAdded.Connect((tag) => {
-			if (getRole(this.player) === tag) {
+		CollectionService.GetInstanceAddedSignal(Roles.hunter).Connect((i) => {
+			if (i === this.player) {
 				this.root.render(
 					<>
 						<screengui ZIndexBehavior={"Sibling"} IgnoreGuiInset={true} ResetOnSpawn={true} key={"ResetUi"}>
@@ -60,7 +60,14 @@ export class HudController implements OnStart, onCharacterAdded {
 
 		const root = this.root;
 		const role = getRole(player);
+		print("ROLE: ", role);
+
+		root.unmount();
+		task.wait(1);
+
 		if (role === Roles.none) {
+			task.wait(1);
+			print("Rendering UI ⚠️");
 			root.render(
 				<screengui ZIndexBehavior={"Sibling"} ResetOnSpawn={true}>
 					<RTimer></RTimer>
