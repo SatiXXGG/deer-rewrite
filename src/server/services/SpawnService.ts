@@ -203,7 +203,7 @@ export class SpawnService implements OnStart {
 		player.SetAttribute("Hunger", 1500);
 		/** Hunger handling */
 		const loop = coroutine.create(() => {
-			while (character.Humanoid) {
+			while (character && character.FindFirstChildOfClass("Humanoid")) {
 				const currentHunger = player.GetAttribute("Hunger") as number;
 				if (currentHunger > 0) {
 					player.SetAttribute("Hunger", math.clamp(currentHunger - 1, 0, 1500));

@@ -1,7 +1,7 @@
 import { OnStart, Service } from "@flamework/core";
 import FastCast from "@rbxts/fastcast";
 import Make from "@rbxts/make";
-import { Players, ReplicatedStorage, ServerStorage, Workspace } from "@rbxts/services";
+import { Debris, Players, ReplicatedStorage, ServerStorage, Workspace } from "@rbxts/services";
 import { Events } from "server/network";
 import { ICharacter, IDeerSkin } from "shared/components/types/Character";
 import { IBowInfo } from "shared/data/Skins";
@@ -30,8 +30,16 @@ export class EntityService implements OnStart {
 				if (distance < 17) {
 					const currentHunger = (player.GetAttribute("Hunger") as number | undefined) ?? 0;
 					mushroom.Destroy();
-					player.SetAttribute("Hunger", math.clamp(currentHunger + 1000, 0, 1000));
-					//TODO: ADD SFX
+					player.SetAttribute("Hunger", math.clamp(currentHunger + 1500, 0, 1500));
+					//* sound vfx
+					const sound = Make("Sound", {
+						SoundId: "rbxassetid://3043029786",
+						Name: "sfx",
+						Parent: character.HumanoidRootPart,
+						RollOffMaxDistance: 80,
+						PlayOnRemove: true,
+					});
+					sound.Destroy();
 				}
 			}
 		});
@@ -41,13 +49,25 @@ export class EntityService implements OnStart {
 			if (character && getRole(player) === Roles.deer) {
 				const profile = this.DataService.getProfile(player);
 				const currentTaunt = profile.Data.currentTaunt;
+
 				let taunt = ReplicatedStorage.skins.taunt.FindFirstChild(currentTaunt) as ParticleEmitter | undefined;
 				if (taunt) {
 					taunt = taunt.Clone();
 					//* setup
 					taunt.Parent = character.taunt;
+
 					//* emission
 					taunt.Emit(25);
+
+					//* sound vfx
+					const sound = Make("Sound", {
+						SoundId: "rbxassetid://8152780685",
+						Name: "sfx",
+						Parent: character.HumanoidRootPart,
+						RollOffMaxDistance: 80,
+						PlayOnRemove: true,
+					});
+					sound.Destroy();
 				}
 			} else if (character && getRole(player) === Roles.wendigo) {
 				print("Wendigo scream");
@@ -94,10 +114,36 @@ export class EntityService implements OnStart {
 				if ((player && getRole(player) === Roles.deer) || !player) {
 					character.Humanoid.TakeDamage(99999);
 					bullet?.Destroy();
+					//* death vfx
+					const vfx = ReplicatedStorage.deathEffects.default.Clone();
+					vfx.CFrame = character.HumanoidRootPart.CFrame;
+					vfx.Anchored = true;
+					vfx.CanQuery = false;
+					vfx.CanCollide = false;
+					vfx.Parent = Workspace;
+					print(vfx.GetFullName());
+					task.wait();
+					vfx.GetChildren().forEach((child) => {
+						if (child.IsA("ParticleEmitter")) {
+							child.Emit(child.GetAttribute("EmitCount") as number);
+							task.wait();
+						}
+					});
+
+					Debris.AddItem(vfx, 10);
 
 					if (player && getRole(player) === Roles.deer) {
 						this.QuestService.incrementQuests(player, EQuests.kill10deer);
 						this.QuestService.incrementQuests(player, EQuests.kill50deer);
+					}
+					character.Destroy();
+					task.wait(0.1);
+
+					if (player) {
+						player.RemoveTag("playing");
+						player.RemoveTag(Roles.deer);
+						player.RemoveTag(Roles.wendigo);
+						player.LoadCharacter();
 					}
 				}
 			}
@@ -170,6 +216,16 @@ export class EntityService implements OnStart {
 					trap.AddTag("trap");
 				});
 				loaded.Play();
+
+				const sound = Make("Sound", {
+					SoundId: "rbxassetid://9119072660",
+					Name: "sfx",
+					Parent: character.HumanoidRootPart,
+					RollOffMaxDistance: 200,
+					PlayOnRemove: true,
+					Volume: 5,
+				});
+				sound.Destroy();
 			}
 		}
 	}

@@ -82,6 +82,7 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 	private path = new PathFinding(this.npc.Humanoid);
 
 	onStart() {
+		this.npc.WaitForChild("HumanoidRootPart");
 		this.npc.WaitForChild("Humanoid", 2);
 		assert(this.npc.Humanoid, "No humanoid");
 		const idleAnimation = Make("Animation", {
@@ -126,9 +127,11 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 	}
 
 	calcRandomPos() {
-		let result: Vector3 | undefined = undefined;
+		let result: Vector3 | undefined = this.npc.HumanoidRootPart.Position.add(
+			new Vector3(rad(-this.max, this.max), this.npc.HumanoidRootPart.Position.Y, rad(-this.max, this.max)),
+		); //* change this to undefined when fixed the maps
 
-		while (result === undefined) {
+		while (result === undefined && this.npc) {
 			const randomPos = this.npc.HumanoidRootPart.Position.add(
 				new Vector3(rad(-this.max, this.max), this.npc.HumanoidRootPart.Position.Y, rad(-this.max, this.max)),
 			);
@@ -165,6 +168,10 @@ export class Deer extends BaseComponent<Attributes, ICharacter> implements OnSta
 		}
 
 		if (!this.npc.FindFirstChildOfClass("Humanoid")) return;
-		this.path.moveTo(this.calcRandomPos());
+		const calc = this.calcRandomPos();
+		if (calc) {
+			this.path.moveTo(calc);
+			print("moved");
+		}
 	}
 }

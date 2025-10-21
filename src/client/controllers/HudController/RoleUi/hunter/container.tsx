@@ -39,14 +39,6 @@ export default function RHunterContainer({ icon, text, action, active }: Props) 
 		>
 			<uiscale key={"UIScale"} Scale={scaleSpring}></uiscale>
 
-			<uistroke
-				key={"UIStroke"}
-				ApplyStrokeMode={Enum.ApplyStrokeMode.Border}
-				Color={Color3.fromRGB(0, 0, 0)}
-				Thickness={6.7}
-				Transparency={0.59}
-			/>
-
 			<imagelabel
 				BackgroundTransparency={1}
 				Image={icon}

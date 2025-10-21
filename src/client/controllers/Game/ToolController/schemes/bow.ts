@@ -14,9 +14,14 @@ export const TsBow = {
 	setup(character: ICharacter) {
 		const player = Players.GetPlayerFromCharacter(character)!;
 		const mouse = player.GetMouse();
+		let cooldown = false;
 		mouse.Button1Down.Connect(() => {
-			if (this.isEquipped) {
+			if (this.isEquipped && !cooldown) {
 				Events.bow.shot(mouse.Hit.Position);
+				cooldown = true;
+				task.delay(1, () => {
+					cooldown = false;
+				});
 			}
 		});
 		player.CameraMode = Enum.CameraMode.LockFirstPerson;

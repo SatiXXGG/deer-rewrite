@@ -1,5 +1,5 @@
 import { Service, OnStart } from "@flamework/core";
-import { CollectionService, Players, SoundService, Workspace } from "@rbxts/services";
+import { CollectionService, Players, RunService, SoundService, Workspace } from "@rbxts/services";
 import { Events } from "server/network";
 import { Roles } from "shared/types/RoleTags";
 import { DataService } from "./DataService";
@@ -22,7 +22,7 @@ interface RoundInfo {
 
 const RoundsInfo: Record<Rounds, RoundInfo> = {
 	[Rounds.Intermission]: {
-		duration: 30,
+		duration: RunService.IsStudio() ? 10 : 30,
 		order: 0,
 	},
 	[Rounds.Voting]: {
@@ -38,11 +38,11 @@ const RoundsInfo: Record<Rounds, RoundInfo> = {
 		order: 3,
 	},
 	[Rounds.OnRound]: {
-		duration: 120,
+		duration: RunService.IsStudio() ? 30 : 120,
 		order: 4,
 	},
 	[Rounds.Survive]: {
-		duration: 60,
+		duration: RunService.IsStudio() ? 30 : 60,
 		order: 5,
 	},
 	[Rounds.Detection]: {
