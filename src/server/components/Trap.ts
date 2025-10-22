@@ -68,6 +68,26 @@ export class Trap extends BaseComponent<Attributes, ITrap> implements OnStart {
 					t1.Play();
 					t2.Play();
 
+					const sound1 = Make("Sound", {
+						SoundId: "rbxassetid://137171473068941",
+						Name: "sfx",
+						Parent: this.instance.hitbox,
+						RollOffMaxDistance: 80,
+						PlayOnRemove: true,
+					});
+
+					sound1.Destroy();
+
+					const sound2 = Make("Sound", {
+						SoundId: "rbxassetid://137327038366979",
+						Name: "sfx",
+						Parent: this.instance.hitbox,
+						RollOffMaxDistance: 80,
+						PlayOnRemove: true,
+					});
+
+					sound2.Destroy();
+
 					task.delay(5, () => {
 						this.instance.Destroy();
 						super.destroy();

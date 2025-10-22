@@ -27,7 +27,7 @@ export default function RWendigoContainer({ icon, text, action, active }: Props)
 	return (
 		<imagebutton
 			BackgroundColor3={Color3.fromRGB(214, 56, 56)}
-			BackgroundTransparency={0.55}
+			BackgroundTransparency={1}
 			key={"boost"}
 			Event={{
 				Activated: action,

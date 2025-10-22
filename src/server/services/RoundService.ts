@@ -220,4 +220,14 @@ export class RoundService implements OnStart {
 		this.current = Rounds.Intermission;
 		this.updateRound();
 	}
+
+	decreaseTime(amount: number) {
+		this.lastChange = this.lastChange - amount;
+		this.updateTime();
+	}
+
+	increaseTime(amount: number) {
+		this.lastChange = this.lastChange + amount;
+		this.updateTime();
+	}
 }

@@ -1,29 +1,49 @@
-import { useMountEffect } from "@rbxts/pretty-react-hooks";
+import { useMountEffect, useUnmountEffect } from "@rbxts/pretty-react-hooks";
 import React, { useEffect, useState } from "@rbxts/react";
 import { Workspace } from "@rbxts/services";
+import RSanity from "./sanity";
 
 export default function RTimer() {
 	const [left, setLeft] = useState(0);
-	const [phase, setPhase] = useState("phase");
+	const [phase, setPhase] = useState("loading...");
 	const [text, setText] = useState("loading...");
+	const [conn, setConn] = useState<RBXScriptConnection>();
 
+	// Actualiza el texto cada que cambian phase o left
 	useEffect(() => {
 		setText(`${phase}: ${left}`);
 	}, [phase, left]);
 
+	// Configura conexión al montar
 	useMountEffect(() => {
-		setPhase(Workspace.GetAttribute("phase") as string);
-		setLeft(Workspace.GetAttribute("remaining") as number);
+		// Valores iniciales
+		const initialPhase = Workspace.GetAttribute("phase") as string | undefined;
+		const initialLeft = Workspace.GetAttribute("remaining") as number | undefined;
+
+		if (initialPhase) setPhase(initialPhase);
+		if (initialLeft !== undefined) setLeft(initialLeft);
+
+		// Conexión al cambio de atributos
+		const connection = Workspace.AttributeChanged.Connect((att) => {
+			if (att === "phase") {
+				const value = Workspace.GetAttribute("phase") as string | undefined;
+				if (value) setPhase(value);
+			} else if (att === "remaining") {
+				const value = Workspace.GetAttribute("remaining") as number | undefined;
+				if (value !== undefined) setLeft(value);
+			}
+		});
+
+		setConn(connection);
 	});
 
-	Workspace.AttributeChanged.Connect((att) => {
-		if (att === "phase") {
-			setPhase(Workspace.GetAttribute("phase") as string);
-		} else if (att === "remaining") {
-			setLeft(Workspace.GetAttribute("remaining") as number);
-		}
+	// Limpia conexión al desmontar
+	useUnmountEffect(() => {
+		if (conn) conn.Disconnect();
 	});
-	return (
+
+	// Render
+	return phase !== "On round" ? (
 		<frame
 			BackgroundTransparency={1}
 			key={"main"}
@@ -43,5 +63,7 @@ export default function RTimer() {
 				<uistroke key={"UIStroke"} Thickness={4.2} />
 			</textlabel>
 		</frame>
+	) : (
+		<RSanity />
 	);
 }

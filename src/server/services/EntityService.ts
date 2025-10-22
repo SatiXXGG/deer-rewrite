@@ -13,6 +13,7 @@ import { MapService } from "./MapService";
 import { ITrap } from "server/components/Trap";
 import { QuestService } from "./QuestService";
 import { EQuests } from "shared/data/Quest";
+import { RoundService } from "./RoundService";
 
 @Service({})
 export class EntityService implements OnStart {
@@ -20,16 +21,23 @@ export class EntityService implements OnStart {
 		Name: "Arrows container",
 		Parent: Workspace,
 	});
-	constructor(private DataService: DataService, private MapService: MapService, private QuestService: QuestService) {}
+	constructor(
+		private DataService: DataService,
+		private MapService: MapService,
+		private QuestService: QuestService,
+		private RoundService: RoundService,
+	) {}
 
 	onStart() {
 		Events.gameplay.eat.connect((player, mushroom) => {
 			const character = player.Character as ICharacter | undefined;
-			if (character && mushroom && player.GetTags().includes(Roles.deer)) {
+			if (character && mushroom && player.GetTags().includes(Roles.deer) && mushroom.GetAttribute("usable")) {
 				const distance = character.HumanoidRootPart.Position.sub(mushroom.GetPivot().Position).Magnitude;
 				if (distance < 17) {
 					const currentHunger = (player.GetAttribute("Hunger") as number | undefined) ?? 0;
 					mushroom.Destroy();
+					mushroom.SetAttribute("usable", false);
+
 					player.SetAttribute("Hunger", math.clamp(currentHunger + 1500, 0, 1500));
 					//* sound vfx
 					const sound = Make("Sound", {
@@ -70,7 +78,14 @@ export class EntityService implements OnStart {
 					sound.Destroy();
 				}
 			} else if (character && getRole(player) === Roles.wendigo) {
-				print("Wendigo scream");
+				const sound = Make("Sound", {
+					SoundId: "rbxassetid://83172103129307",
+					Name: "sfx",
+					Parent: character.HumanoidRootPart,
+					RollOffMaxDistance: 80,
+					PlayOnRemove: true,
+				});
+				sound.Destroy();
 			}
 		});
 		Events.gameplay.trap.connect((player) => {
@@ -135,6 +150,9 @@ export class EntityService implements OnStart {
 					if (player && getRole(player) === Roles.deer) {
 						this.QuestService.incrementQuests(player, EQuests.kill10deer);
 						this.QuestService.incrementQuests(player, EQuests.kill50deer);
+						this.RoundService.increaseTime(10);
+					} else {
+						this.RoundService.decreaseTime(10);
 					}
 					character.Destroy();
 					task.wait(0.1);

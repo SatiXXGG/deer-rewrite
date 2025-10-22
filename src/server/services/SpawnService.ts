@@ -9,6 +9,7 @@ import { Events } from "server/network";
 import { DataService } from "./DataService";
 import getRole from "shared/utils/getRole";
 import { Settings } from "shared/data/GameSettings";
+import Make from "@rbxts/make";
 @Service({})
 export class SpawnService implements OnStart {
 	constructor(
@@ -38,6 +39,16 @@ export class SpawnService implements OnStart {
 					}
 				});
 
+				const sound = Make("Sound", {
+					SoundId: "rbxassetid://6241709963",
+					Name: "sfx",
+					Parent: character.HumanoidRootPart,
+					RollOffMaxDistance: 80,
+
+					PlayOnRemove: true,
+				});
+				sound.Destroy();
+
 				task.delay(0.2, () => {
 					player.SetAttribute("cooldown", false);
 				});
@@ -53,6 +64,7 @@ export class SpawnService implements OnStart {
 			});
 			if (ray) {
 				const mushroomModel = ServerStorage.assets.mushroom.Clone();
+				mushroomModel.SetAttribute("usable", true);
 				mushroomModel.PivotTo(
 					new CFrame(ray.Position, ray.Position.add(ray.Normal)).mul(CFrame.Angles(math.rad(-90), 0, 0)),
 				);
@@ -142,7 +154,6 @@ export class SpawnService implements OnStart {
 			const spawn = this.MapService.getSpawn();
 			if (spawn) {
 				character.HumanoidRootPart.CFrame = spawn.CFrame;
-				this.autoRemoveTags(player, Roles.deer);
 				this.bindHunger(player, character);
 			}
 			//* tag removal
@@ -150,7 +161,6 @@ export class SpawnService implements OnStart {
 	}
 
 	spawnWendigo(player: Player) {
-		this.cleanTags(player);
 		const cc = player.Character as ICharacter | undefined;
 		player.AddTag(Roles.playing);
 		player.AddTag(Roles.wendigo);
@@ -163,6 +173,8 @@ export class SpawnService implements OnStart {
 
 				character.HumanoidRootPart.CFrame = currentPosition;
 				this.autoRemoveTags(player, Roles.wendigo);
+				this.autoRemoveTags(player, Roles.deer);
+				this.autoRemoveTags(player, Roles.playing);
 			}
 		}
 	}

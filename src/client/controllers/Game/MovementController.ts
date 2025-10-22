@@ -119,5 +119,6 @@ export class MovementController implements OnStart, onCharacterAdded {
 	wendigo(character: ICharacter) {
 		character.Humanoid.WalkSpeed = 24;
 		this.AnimationController.play("transformation");
+		Events.gameplay.taunt.fire();
 	}
 }
