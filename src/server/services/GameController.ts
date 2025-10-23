@@ -3,15 +3,22 @@ import { VotingInstance, VotingService } from "./VotingService";
 import { Rounds, RoundService } from "./RoundService";
 import { MapService } from "./MapService";
 import { SpawnService } from "./SpawnService";
-import { CollectionService, Players, ServerStorage } from "@rbxts/services";
+import { CollectionService, Lighting, Players, ServerStorage, TweenService } from "@rbxts/services";
 import { Settings } from "shared/data/GameSettings";
 import { Roles } from "shared/types/RoleTags";
 import { EItemClass } from "shared/types/GameItem";
+
+const RoundsTime: { [key in Rounds]?: number } = {
+	[Rounds.Hide]: 10,
+	[Rounds.OnRound]: 18,
+	[Rounds.Survive]: 22,
+};
 
 @Service({})
 export class GameController implements OnStart {
 	private votingInstance: VotingInstance | undefined;
 	private lastRound = Rounds.Survive;
+	private currentTween: Tween | undefined = undefined;
 	constructor(
 		private VotingService: VotingService,
 		private RoundService: RoundService,
@@ -21,6 +28,31 @@ export class GameController implements OnStart {
 
 	onStart() {
 		this.RoundService.onChange((current) => {
+			if (this.currentTween) {
+				this.currentTween.Cancel();
+			}
+
+			//* time tween
+			if (RoundsTime[current] !== undefined) {
+				const tween = TweenService.Create(
+					Lighting,
+					new TweenInfo(this.RoundService.getRoundDuration(current)),
+					{
+						ClockTime: RoundsTime[current],
+					},
+				);
+
+				tween.Play();
+				this.currentTween = tween;
+			} else {
+				const tween = TweenService.Create(Lighting, new TweenInfo(5), {
+					ClockTime: 12,
+				});
+				tween.Play();
+				this.currentTween = tween;
+			}
+
+			//* other handles
 			if (current === this.lastRound) {
 				return;
 			}

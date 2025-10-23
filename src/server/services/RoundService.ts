@@ -230,4 +230,8 @@ export class RoundService implements OnStart {
 		this.lastChange = this.lastChange + amount;
 		this.updateTime();
 	}
+
+	getRoundDuration(round: Rounds) {
+		return RoundsInfo[round].duration;
+	}
 }
