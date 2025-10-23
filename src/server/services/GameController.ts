@@ -3,9 +3,10 @@ import { VotingInstance, VotingService } from "./VotingService";
 import { Rounds, RoundService } from "./RoundService";
 import { MapService } from "./MapService";
 import { SpawnService } from "./SpawnService";
-import { CollectionService, Players } from "@rbxts/services";
+import { CollectionService, Players, ServerStorage } from "@rbxts/services";
 import { Settings } from "shared/data/GameSettings";
 import { Roles } from "shared/types/RoleTags";
+import { EItemClass } from "shared/types/GameItem";
 
 @Service({})
 export class GameController implements OnStart {
@@ -55,6 +56,25 @@ export class GameController implements OnStart {
 				const players = this.SpawnService.getPlayers();
 				players.forEach((player) => {
 					this.SpawnService.spawnWendigo(player);
+				});
+				/** remove bow  & gives flashlight */
+				const hunters = CollectionService.GetTagged(Roles.hunter) as Player[];
+				hunters.forEach((hunter) => {
+					hunter.Backpack.GetChildren().forEach((child) => {
+						if (child.IsA("Tool") && child.GetAttribute("class") === EItemClass.bow) {
+							child.Destroy();
+						}
+					});
+					if (hunter.Character) {
+						hunter.Character.GetChildren().forEach((child) => {
+							if (child.GetAttribute("class") === EItemClass.bow) {
+								child.Destroy();
+							}
+						});
+					}
+
+					const flashlight = ServerStorage.assets.flashlight.Clone();
+					flashlight.Parent = hunter.Backpack;
 				});
 			} else if (Rounds.Detection === current) {
 				const safeHunters = CollectionService.GetTagged(Roles.safeHunter).size();

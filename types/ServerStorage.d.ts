@@ -9,5 +9,6 @@ interface ServerStorage extends Instance {
 		trap: Model;
 		mushroom: Model;
 		cash: BasePart;
+		flashlight: Tool;
 	};
 }
