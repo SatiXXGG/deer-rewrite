@@ -1,6 +1,13 @@
 import { Service, OnStart } from "@flamework/core";
 import { MapService } from "./MapService";
-import { CollectionService, Players, ReplicatedStorage, ServerStorage, Workspace } from "@rbxts/services";
+import {
+	CollectionService,
+	PhysicsService,
+	Players,
+	ReplicatedStorage,
+	ServerStorage,
+	Workspace,
+} from "@rbxts/services";
 import { ICharacter } from "shared/components/types/Character";
 import { RoleArray, Roles } from "shared/types/RoleTags";
 import { Trove } from "@rbxts/trove";
@@ -10,12 +17,18 @@ import { DataService } from "./DataService";
 import getRole from "shared/utils/getRole";
 import { Settings } from "shared/data/GameSettings";
 import Make from "@rbxts/make";
+import { EntityService } from "./EntityService";
+
+PhysicsService.RegisterCollisionGroup("noCollide");
+PhysicsService.CollisionGroupSetCollidable("noCollide", "noCollide", false);
+
 @Service({})
 export class SpawnService implements OnStart {
 	constructor(
 		private MapService: MapService,
 		private AvatarService: AvatarService,
 		private DataService: DataService,
+		private EntityService: EntityService,
 	) {}
 	onStart() {
 		Events.gameplay.attack.connect((player) => {
@@ -89,8 +102,18 @@ export class SpawnService implements OnStart {
 				skin.Parent = this.MapService.currentMap!;
 				skin.AddTag("deer");
 				skin.HumanoidRootPart.CFrame = new CFrame(ray.Position.add(new Vector3(0, 5, 0)));
+				this.disableCollision(skin);
 			}
 		}
+	}
+
+	disableCollision(item: Model) {
+		task.wait();
+		item.GetDescendants().forEach((descendant) => {
+			if (descendant.IsA("BasePart")) {
+				descendant.CollisionGroup = "noCollide";
+			}
+		});
 	}
 
 	autoRemoveTags(player: Player, role: Roles) {
@@ -98,12 +121,14 @@ export class SpawnService implements OnStart {
 		const trove = new Trove();
 		if (character) {
 			trove.connect(character.Destroying, () => {
+				warn("removed tag");
 				player.RemoveTag(role);
 				player.RemoveTag("playing");
-				trove.clean();
 			});
 
 			trove.connect(character.Humanoid.Died, () => {
+				warn("removed tag");
+
 				player.RemoveTag(role);
 				player.RemoveTag("playing");
 				trove.clean();
@@ -133,6 +158,7 @@ export class SpawnService implements OnStart {
 					const bow = skin.Clone();
 					bow.Parent = player.Backpack;
 				}
+				this.disableCollision(character);
 			}
 		}
 	}
@@ -156,6 +182,8 @@ export class SpawnService implements OnStart {
 				character.HumanoidRootPart.CFrame = spawn.CFrame;
 				this.bindHunger(player, character);
 			}
+			this.disableCollision(character);
+
 			//* tag removal
 		}
 	}
@@ -212,13 +240,13 @@ export class SpawnService implements OnStart {
 
 	bindHunger(player: Player, character: ICharacter) {
 		//* Resets
-		player.SetAttribute("Hunger", 1500);
+		player.SetAttribute("Hunger", 2000);
 		/** Hunger handling */
 		const loop = coroutine.create(() => {
 			while (character && character.FindFirstChildOfClass("Humanoid")) {
 				const currentHunger = player.GetAttribute("Hunger") as number;
 				if (currentHunger > 0) {
-					player.SetAttribute("Hunger", math.clamp(currentHunger - 1, 0, 1500));
+					player.SetAttribute("Hunger", math.clamp(currentHunger - 1, 0, 2000));
 				}
 				task.wait();
 			}
@@ -226,5 +254,15 @@ export class SpawnService implements OnStart {
 			coroutine.close(loop);
 		});
 		coroutine.resume(loop);
+	}
+
+	spawnCash() {
+		const position = this.MapService.getSpawnPosition((result) => {
+			return result.Material === Enum.Material.Grass;
+		});
+
+		if (position) {
+			this.EntityService.cash(position.Position.add(new Vector3(0, 3, 0)));
+		}
 	}
 }

@@ -7,7 +7,6 @@ import { ICharacter, IDeerSkin } from "shared/components/types/Character";
 import { IBowInfo } from "shared/data/Skins";
 import { Roles } from "shared/types/RoleTags";
 import getRole from "shared/utils/getRole";
-import { isPlayer } from "shared/utils/isPlayer";
 import { DataService } from "./DataService";
 import { MapService } from "./MapService";
 import { ITrap } from "server/components/Trap";
@@ -38,7 +37,7 @@ export class EntityService implements OnStart {
 					mushroom.Destroy();
 					mushroom.SetAttribute("usable", false);
 
-					player.SetAttribute("Hunger", math.clamp(currentHunger + 1500, 0, 1500));
+					player.SetAttribute("Hunger", math.clamp(currentHunger + 2000, 0, 2000));
 					//* sound vfx
 					const sound = Make("Sound", {
 						SoundId: "rbxassetid://3043029786",
@@ -219,11 +218,20 @@ export class EntityService implements OnStart {
 				});
 
 				const loaded = character.Humanoid.Animator.LoadAnimation(anim);
+				const sound = Make("Sound", {
+					SoundId: "rbxassetid://9119072660",
+					Name: "sfx",
+					Parent: character.HumanoidRootPart,
+					RollOffMaxDistance: 200,
+					PlayOnRemove: true,
+					Volume: 5,
+				});
 				const c = loaded.Ended.Connect(() => {
 					motor.Destroy();
 					trapModel.Destroy();
 					loaded.Destroy();
 					c.Disconnect();
+					sound.Destroy();
 					//* trap placing
 					player.SetAttribute("traps", currentTraps - 1);
 					const trap = ServerStorage.assets.trap.Clone();
@@ -234,17 +242,21 @@ export class EntityService implements OnStart {
 					trap.AddTag("trap");
 				});
 				loaded.Play();
-
-				const sound = Make("Sound", {
-					SoundId: "rbxassetid://9119072660",
-					Name: "sfx",
-					Parent: character.HumanoidRootPart,
-					RollOffMaxDistance: 200,
-					PlayOnRemove: true,
-					Volume: 5,
-				});
-				sound.Destroy();
 			}
+		}
+	}
+
+	/**
+	 * Spawn cash
+	 */
+	cash(position: Vector3) {
+		if (this.MapService.currentMap !== undefined) {
+			const clone = ServerStorage.assets.cash.Clone();
+			clone.Position = position;
+			clone.Anchored = true;
+			clone.CanCollide = false;
+			clone.Parent = this.MapService.currentMap;
+			clone.AddTag("cashEntity");
 		}
 	}
 }

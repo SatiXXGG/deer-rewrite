@@ -18,6 +18,7 @@ export default function RCloseButton(props: Props) {
 
 	return (
 		<frame
+			LayoutOrder={99}
 			AnchorPoint={new Vector2(1, 0.5)}
 			BackgroundTransparency={1}
 			key={"Exit"}

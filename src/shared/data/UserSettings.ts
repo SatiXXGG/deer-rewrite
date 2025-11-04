@@ -1,9 +1,10 @@
 import Object from "@rbxts/object-utils";
-import { Workspace } from "@rbxts/services";
+import { SoundService, Workspace } from "@rbxts/services";
 
 export enum EUserSetting {
 	Shadows = "Shadows",
 	Fov = "Fov",
+	Music = "Music",
 }
 
 export interface IUserSettingInfo {
@@ -24,6 +25,18 @@ export const TUserSettings: Record<EUserSetting, IUserSettingInfo> = {
 			Workspace.GetDescendants().forEach((child) => {
 				if (child.IsA("BasePart")) {
 					child.CastShadow = current as boolean;
+				}
+			});
+		},
+	},
+	[EUserSetting.Music]: {
+		name: "Music",
+		description: "Enables music",
+		value: true,
+		action: (current) => {
+			SoundService.GetDescendants().forEach((child) => {
+				if (child.IsA("Sound")) {
+					child.Volume = current === true ? 0.1 : 0;
 				}
 			});
 		},

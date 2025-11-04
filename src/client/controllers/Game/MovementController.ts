@@ -96,7 +96,7 @@ export class MovementController implements OnStart, onCharacterAdded {
 		if (RunService.IsStudio() || role === Roles.deer) {
 			const c1 = PlayerState.onAdd((added) => {
 				if (added === EPlayerState.stunned) {
-					humanoid.WalkSpeed = 3;
+					humanoid.WalkSpeed = 0;
 					this.AnimationController.play("deerTrapHit", false);
 				}
 			});
@@ -118,7 +118,7 @@ export class MovementController implements OnStart, onCharacterAdded {
 	}
 	wendigo(character: ICharacter) {
 		character.Humanoid.WalkSpeed = 24;
-		this.AnimationController.play("transformation");
+		this.AnimationController.play("transformation", false, true);
 		Events.gameplay.taunt.fire();
 	}
 }

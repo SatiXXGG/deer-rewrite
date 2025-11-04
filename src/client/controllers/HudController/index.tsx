@@ -14,17 +14,21 @@ import RWendigoUi from "./RoleUi/wendigo";
 import RHunterUi from "./RoleUi/hunter";
 import RWinnerScreen from "./winner";
 import Make from "@rbxts/make";
+
 @Controller({})
 export class HudController implements OnStart, onCharacterAdded {
 	private player = Players.LocalPlayer;
 	private playerGui = this.player.WaitForChild("PlayerGui") as PlayerGui;
-	private root = createRoot(this.playerGui);
 	private bubbleHover = Make("Sound", {
 		Name: "BubbleHover",
 		Parent: this.player,
 		SoundId: "rbxassetid://77120543307812",
 	});
 
+	private folder = Make("Folder", {
+		Name: "Hud",
+		Parent: this.playerGui,
+	});
 	private bubbleClick = Make("Sound", {
 		Name: "BubbleClick",
 		Parent: this.player,
@@ -34,19 +38,19 @@ export class HudController implements OnStart, onCharacterAdded {
 	onStart() {
 		CollectionService.GetInstanceAddedSignal(Roles.hunter).Connect((i) => {
 			if (i === this.player) {
-				this.root.render(
+				this.folder.Destroy();
+				this.folder = Make("Folder", {
+					Name: "Hud",
+					Parent: this.playerGui,
+				});
+				const root = createRoot(this.folder);
+				root.unmount();
+				task.wait(1);
+				root.render(
 					<>
 						<screengui ZIndexBehavior={"Sibling"} IgnoreGuiInset={true} ResetOnSpawn={true} key={"ResetUi"}>
 							<RTimer></RTimer>
 							<RHunterUi></RHunterUi>
-						</screengui>
-						<screengui
-							ZIndexBehavior={"Sibling"}
-							IgnoreGuiInset={true}
-							ResetOnSpawn={false}
-							key={"NoResetUi"}
-						>
-							<RWinnerScreen></RWinnerScreen>
 						</screengui>
 					</>,
 				);
@@ -57,8 +61,15 @@ export class HudController implements OnStart, onCharacterAdded {
 	onCharacterAdded(character: ICharacter): void {
 		const player = Players.LocalPlayer;
 		if (!player) return; // Por seguridad
+		print(this.folder, this.folder.Parent);
+		if (this.folder.Parent === undefined) {
+			this.folder = Make("Folder", {
+				Name: "Hud",
+				Parent: this.playerGui,
+			});
+		}
+		const root = createRoot(this.folder);
 
-		const root = this.root;
 		const role = getRole(player);
 		print("ROLE: ", role);
 
@@ -72,6 +83,7 @@ export class HudController implements OnStart, onCharacterAdded {
 				<screengui ZIndexBehavior={"Sibling"} ResetOnSpawn={true}>
 					<RTimer></RTimer>
 					<RApp></RApp>
+					<RWinnerScreen></RWinnerScreen>
 				</screengui>,
 			);
 		} else if (role === Roles.deer) {

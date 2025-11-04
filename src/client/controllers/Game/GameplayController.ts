@@ -95,13 +95,26 @@ export class GameplayController implements OnStart, onCharacterAdded {
 	}
 
 	onCharacterAdded(character: ICharacter): void {
-		print("cleanup");
 		this.trove.clean();
 		const tags = this.player.GetTags();
 		if (getRole(this.player) === Roles.deer) {
 			this.deer(character);
 		} else if (getRole(this.player) === Roles.wendigo) {
 			this.wendigo(character);
+		}
+	}
+
+	mapSetCollision(collision: boolean) {
+		const currentMap = Workspace.FindFirstChild("currentMap") as Model & {
+			hunterSpawns: Folder;
+		};
+
+		if (currentMap) {
+			currentMap.hunterSpawns.GetChildren().forEach((spawn) => {
+				if (spawn.IsA("BasePart")) {
+					spawn.CanCollide = collision;
+				}
+			});
 		}
 	}
 
@@ -138,7 +151,7 @@ export class GameplayController implements OnStart, onCharacterAdded {
 					/** handling eat */
 					Events.gameplay.eat.fire(currentMushroom);
 					PlayerState.add(EPlayerState.eating, math.huge);
-					this.AnimationController.play("eatDeer");
+					this.AnimationController.play("eatDeer", false, true);
 					task.delay(3, () => {
 						PlayerState.remove(EPlayerState.eating);
 					});
@@ -183,7 +196,7 @@ export class GameplayController implements OnStart, onCharacterAdded {
 			} else if (ActionsController.IsJustPressed("taunt") && !PlayerState.listHasState(EPlayerState.taunt)) {
 				Events.gameplay.taunt.fire();
 				PlayerState.add(EPlayerState.taunt, math.huge);
-				this.AnimationController.play("tauntDeer");
+				this.AnimationController.play("tauntDeer", false, true);
 				task.delay(3, () => {
 					PlayerState.remove(EPlayerState.taunt);
 				});
@@ -216,6 +229,8 @@ export class GameplayController implements OnStart, onCharacterAdded {
 				}
 			}
 		});
+
+		this.mapSetCollision(true);
 	}
 	wendigo(character: ICharacter) {
 		let left = false;
@@ -224,20 +239,22 @@ export class GameplayController implements OnStart, onCharacterAdded {
 				this.attack();
 				if (left) {
 					left = false;
-					this.AnimationController.play("attackL");
+					this.AnimationController.play("attackL", false, true);
 				} else {
 					left = true;
-					this.AnimationController.play("attackR");
+					this.AnimationController.play("attackR", false, true);
 				}
 			} else if (ActionsController.IsJustPressed("taunt") && !PlayerState.listHasState(EPlayerState.screaming)) {
 				Events.gameplay.taunt.fire();
 				PlayerState.add(EPlayerState.screaming, math.huge);
-				this.AnimationController.play("scream");
+				this.AnimationController.play("scream", false, true);
 				task.delay(5, () => {
 					PlayerState.remove(EPlayerState.screaming);
 				});
 			}
 		});
+
+		this.mapSetCollision(true);
 	}
 
 	hunter(character: ICharacter) {

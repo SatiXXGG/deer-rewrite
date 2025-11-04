@@ -37,7 +37,7 @@ interface IPlayerData {
 
 @Service({})
 export class DataService implements OnStart, onPlayerJoined {
-	private DataKey = "PlayerData-(0.2.2)";
+	private DataKey = "PlayerData-(0.2.3)";
 
 	private profiles: Map<Player, Profile<IPlayerData>> = new Map();
 	private template: IPlayerData = {
@@ -59,6 +59,7 @@ export class DataService implements OnStart, onPlayerJoined {
 		settings: {
 			[EUserSetting.Shadows]: false,
 			[EUserSetting.Fov]: 75,
+			[EUserSetting.Music]: true,
 		},
 	};
 
@@ -203,7 +204,7 @@ export class DataService implements OnStart, onPlayerJoined {
 
 		player.SetAttribute("lastClaim", profile.Data.lastClaim);
 		player.SetAttribute("lastReward", profile.Data.lastReward);
-
+		player.DevEnableMouseLock = false;
 		const oneDay = 60 * 60 * 24;
 		task.spawn(() => {
 			while (player.IsDescendantOf(Players)) {

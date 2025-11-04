@@ -50,5 +50,5 @@ export default function useSpectate() {
 		}
 	}, [currentIndex, childs]);
 
-	return { childs, NextUser, prev, name, reset };
+	return { childs, NextUser, prev, name, reset, currentIndex };
 }

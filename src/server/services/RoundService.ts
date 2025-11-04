@@ -22,11 +22,11 @@ interface RoundInfo {
 
 const RoundsInfo: Record<Rounds, RoundInfo> = {
 	[Rounds.Intermission]: {
-		duration: RunService.IsStudio() ? 10 : 30,
+		duration: RunService.IsStudio() ? 5 : 30,
 		order: 0,
 	},
 	[Rounds.Voting]: {
-		duration: 20,
+		duration: RunService.IsStudio() ? 5 : 30,
 		order: 1,
 	},
 	[Rounds.Loading]: {
@@ -186,7 +186,9 @@ export class RoundService implements OnStart {
 			player.IsA("Player"),
 		) as Player[];
 
+		print(hunters);
 		if (hunters.size() > 0) {
+			warn("broadcasting event");
 			Events.winners.set.broadcast(
 				{
 					id: hunters[0].UserId,

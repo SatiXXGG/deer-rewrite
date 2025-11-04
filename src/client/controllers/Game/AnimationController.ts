@@ -8,6 +8,7 @@ import { ICharacter } from "shared/components/types/Character";
 export class AnimationController implements OnStart, onCharacterAdded {
 	private AnimationInstances = new Map<string, Animation>();
 	private LoadedInstances = new Map<string, AnimationTrack>();
+	private hasAction: string[] = [];
 	onStart() {}
 	onCharacterAdded(character: ICharacter): void {
 		this.LoadedInstances.forEach((loaded) => {
@@ -38,16 +39,22 @@ export class AnimationController implements OnStart, onCharacterAdded {
 		this.AnimationInstances.set(name, animation);
 	}
 
-	play(name: string, negate: boolean = false) {
+	play(name: string, negate: boolean = false, action = false) {
 		if (negate) {
 			this.LoadedInstances.forEach((loaded, currentName) => {
-				if (name !== currentName) {
+				if (name !== currentName && !this.hasAction.includes(currentName)) {
 					loaded.Stop();
 				}
 			});
 		}
 		const x = this.LoadedInstances.get(name);
 		if (x?.IsPlaying) return;
+		if (action && x) {
+			this.hasAction.push(name);
+			x.Ended.Once(() => {
+				this.hasAction.remove(this.hasAction.indexOf(name));
+			});
+		}
 		x?.Play();
 	}
 

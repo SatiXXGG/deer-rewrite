@@ -65,6 +65,7 @@ export class MapService implements OnStart {
 		}
 	}
 	setupMap(mapModel: MapModel) {
+		mapModel.Name = "currentMap";
 		mapModel.Parent = Workspace;
 		this.setWinning(mapModel);
 	}
@@ -75,36 +76,38 @@ export class MapService implements OnStart {
 	}
 	setWinning(map: MapModel) {
 		const hunterWinning = map.hunterSpawns.GetChildren() as IHunterSpawn[];
-		hunterWinning.forEach((spawn) => {
-			spawn.Touched.Connect((hit) => {
-				const character = hit.FindFirstAncestorOfClass("Model") as ICharacter | undefined;
+
+		const selected = hunterWinning[math.random(0, hunterWinning.size() - 1)];
+		selected.SetAttribute("selected", true);
+		selected.Touched.Connect((hit) => {
+			const character = hit.FindFirstAncestorOfClass("Model") as ICharacter | undefined;
+			if (
+				character &&
+				character.FindFirstChildOfClass("Humanoid") &&
+				Players.GetPlayerFromCharacter(character) &&
+				this.RoundService.get() === Rounds.Survive
+			) {
+				const player = Players.GetPlayerFromCharacter(character)!;
 				if (
-					character &&
-					character.FindFirstChildOfClass("Humanoid") &&
-					Players.GetPlayerFromCharacter(character) &&
-					this.RoundService.get() === Rounds.Survive
+					player &&
+					player.GetTags().includes(Roles.hunter) &&
+					this.RoundService.get() === Rounds.Survive &&
+					character.Humanoid.Health > 0
 				) {
-					const player = Players.GetPlayerFromCharacter(character)!;
-					if (
-						player &&
-						player.GetTags().includes(Roles.hunter) &&
-						this.RoundService.get() === Rounds.Survive &&
-						character.Humanoid.Health > 0
-					) {
-						player.AddTag(Roles.safeHunter);
-						const safeHunters = CollectionService.GetTagged(Roles.safeHunter).size();
-						const currentHunters = CollectionService.GetTagged(Roles.hunter).size();
-						if (safeHunters === currentHunters) {
-							this.RoundService.win(Roles.hunter);
-						}
+					player.AddTag(Roles.safeHunter);
+					const safeHunters = CollectionService.GetTagged(Roles.safeHunter).size();
+					const currentHunters = CollectionService.GetTagged(Roles.hunter).size();
+					if (safeHunters === currentHunters) {
+						this.RoundService.win(Roles.hunter);
 					}
 				}
-			});
+			}
 		});
 	}
 	highlightWinning() {
 		const hunterWinning = this.currentMap?.hunterSpawns.GetChildren() as IHunterSpawn[];
 		hunterWinning.forEach((spawn) => {
+			if (!spawn.GetAttribute("selected")) return;
 			const escape = new Instance("BillboardGui");
 			escape.Name = "escape";
 			escape.Active = true;

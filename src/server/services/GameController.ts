@@ -76,11 +76,20 @@ export class GameController implements OnStart {
 				}
 				//* Spawn users
 				const roles = this.getRoles();
+				task.wait(1);
 				roles.users.forEach((user) => {
 					this.SpawnService.spawnUser(user);
 				});
 				roles.hunters.forEach((hunter) => {
 					this.SpawnService.spawnHunter(hunter);
+				});
+
+				//* Cash spawning
+
+				task.spawn(() => {
+					for (let i = 0; i < 30; i++) {
+						this.SpawnService.spawnCash();
+					}
 				});
 			} else if (Rounds.Survive === current) {
 				this.MapService.highlightWinning();

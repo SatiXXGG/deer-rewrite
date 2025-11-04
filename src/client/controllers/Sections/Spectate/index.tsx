@@ -1,13 +1,15 @@
 import { useUnmountEffect } from "@rbxts/pretty-react-hooks";
 import React, { useContext, useEffect, useState } from "@rbxts/react";
+import { Players } from "@rbxts/services";
 import ROpenedContext from "client/context/currentOpen";
 import AnimatedWindow from "client/controllers/Elements/AnimatedWindow";
+import RCloseButton from "client/controllers/Elements/CloseButton";
 import useSpectate from "client/controllers/hooks/useSpectate";
 
 export default function RSpectate() {
 	const [isOpen, setOpen] = useState(true);
 	const context = useContext(ROpenedContext);
-	const { NextUser, prev, name, reset } = useSpectate();
+	const { NextUser, prev, name, reset, currentIndex } = useSpectate();
 	useEffect(() => {
 		if (context) {
 			if (context.opened === "Spectate") {
@@ -27,7 +29,7 @@ export default function RSpectate() {
 		<AnimatedWindow
 			anchorPoint={new Vector2(0.5, 0)}
 			size={UDim2.fromScale(0.319792, 0.122335)}
-			position={UDim2.fromScale(0.5, 0.0741427)}
+			position={UDim2.fromScale(0.5, 0.8)}
 			isOpen={isOpen}
 		>
 			<frame
@@ -36,6 +38,11 @@ export default function RSpectate() {
 				Position={UDim2.fromScale(0, 0)}
 				Size={UDim2.fromScale(1, 1)}
 			>
+				<RCloseButton
+					key={"Exit"}
+					Position={UDim2.fromScale(1, 0)}
+					Size={UDim2.fromOffset(70, 70)}
+				></RCloseButton>
 				<uilistlayout
 					key={"UIListLayout"}
 					FillDirection={Enum.FillDirection.Horizontal}
@@ -67,7 +74,7 @@ export default function RSpectate() {
 						key={"Name"}
 						Position={UDim2.fromScale(0.5, 0.5)}
 						Size={UDim2.fromScale(1, 0.530303)}
-						Text={name}
+						Text={name === Players.LocalPlayer.Name ? "You" : name}
 						TextColor3={new Color3(1, 1, 1)}
 						TextScaled={true}
 					>
